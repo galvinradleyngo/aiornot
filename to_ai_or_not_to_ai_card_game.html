@@ -12,6 +12,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Export helpers for the standalone facilitator mode (Save Notes as Image/PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   
   <script>
     tailwind.config = {
@@ -73,6 +76,36 @@
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
+    }
+
+    /* Standalone facilitator mode: card shuffle + deal animations */
+    @keyframes shuffleJitter {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-7px, -5px) rotate(-7deg); }
+      40% { transform: translate(7px, 4px) rotate(6deg); }
+      60% { transform: translate(-5px, 5px) rotate(-5deg); }
+      80% { transform: translate(6px, -4px) rotate(7deg); }
+    }
+    .shuffle-deck-card {
+      animation: shuffleJitter 0.45s ease-in-out infinite;
+    }
+    @keyframes dealIn {
+      0% { opacity: 0; transform: translateY(-40px) scale(0.65) rotate(-10deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    .deal-in {
+      animation: dealIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes flashBanner {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .flash-banner {
+      animation: flashBanner 0.4s ease-out forwards;
+    }
+    .drag-over-zone {
+      outline: 3px dashed #b45309;
+      outline-offset: 2px;
     }
   </style>
 
@@ -141,7 +174,7 @@
           Ethical AI Decision-Making Card Game
         </h2>
         <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
-          Evaluate real-world AI use cases, weigh specific risks and potentials, debate with peers, and commit to responsible governance decisions.
+          Evaluate real-world AI use cases, weigh specific risks and opportunities, debate with peers, and commit to responsible governance decisions.
         </p>
       </div>
 
@@ -201,6 +234,82 @@
         <button onclick="app.startLocalDemo()" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs whitespace-nowrap transition shadow">
           Launch Quick Demo
         </button>
+      </div>
+
+      <!-- Standalone Single-Device Facilitator Mode -->
+      <div class="mt-6 bg-navy/5 border border-navy/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-xl shadow shrink-0">
+            <i class="fa-solid fa-tv"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-navy">Standalone Facilitator Mode (One Device)</h3>
+            <p class="text-xs text-slate-600 mt-0.5">No room code, no other devices needed. Project the game on one screen — the host enters player names, deals cards, and drags each use case onto the decision board while the class discusses out loud.</p>
+          </div>
+        </div>
+        <button onclick="app.showStandaloneSetup()" class="w-full sm:w-auto px-4 py-2.5 bg-navy hover:bg-navy-dark text-white font-semibold rounded-xl text-xs whitespace-nowrap transition shadow flex items-center justify-center space-x-2">
+          <span>Start Standalone Mode</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+    </section>
+
+    <section id="view-standalone-setup" class="hidden max-w-2xl mx-auto py-6">
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+          <h2 class="text-2xl font-bold text-navy flex items-center space-x-2">
+            <i class="fa-solid fa-tv text-gold-amber"></i>
+            <span>Standalone Mode Setup</span>
+          </h2>
+          <button onclick="app.goHome()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">Cancel</button>
+        </div>
+
+        <form onsubmit="app.startStandaloneGame(event)" class="space-y-6">
+          <!-- Edition Picker -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Game Edition (Target Audience)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="solo-edition" value="leadership" checked class="sr-only">
+                <i class="fa-solid fa-building-user text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Leadership</span>
+                <span class="text-[10px] text-slate-500">Deans, Directors & Execs</span>
+              </label>
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="solo-edition" value="teacher" class="sr-only">
+                <i class="fa-solid fa-chalkboard-teacher text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Teacher</span>
+                <span class="text-[10px] text-slate-500">Instructors & Faculty</span>
+              </label>
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="solo-edition" value="student" class="sr-only">
+                <i class="fa-solid fa-user-graduate text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Student</span>
+                <span class="text-[10px] text-slate-500">K-12 & Higher Ed Students</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Player Names -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-semibold text-slate-700">Player / Team Names</label>
+              <button type="button" onclick="app.addStandalonePlayerField()" class="text-xs text-navy hover:underline font-semibold flex items-center space-x-1">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span>Add Player</span>
+              </button>
+            </div>
+            <div id="solo-player-name-list" class="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+              <!-- Player name inputs rendered by JS -->
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Each player gets 1 Risk card + 1 Opportunity card dealt every round.</p>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 px-4 bg-navy hover:bg-navy-dark text-white font-bold rounded-xl transition shadow text-sm flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play text-gold-amber"></i>
+            <span>Deal Round 1</span>
+          </button>
+        </form>
       </div>
     </section>
 
@@ -404,10 +513,14 @@
           
           <!-- Host Controls in Header -->
           <div id="host-round-controls" class="hidden flex items-center space-x-2">
-            <button onclick="app.hostOpenVoting()" class="px-3 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition shadow">
-              <i class="fa-solid fa-check-to-slot mr-1"></i> Open Vote
+            <span id="phase-step-badge" class="hidden md:inline-flex px-2.5 py-1 rounded-full bg-white/10 text-[11px] font-bold text-gold-light">Step 1: Flag Risks &amp; Opportunities</span>
+            <button id="btn-open-cardvote" onclick="app.hostOpenTopPicksVote()" class="px-3 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition shadow">
+              <i class="fa-solid fa-list-check mr-1"></i> Start Top Picks Vote
             </button>
-            <button onclick="app.hostNextRound()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition shadow">
+            <button id="btn-open-decisionvote" onclick="app.hostOpenDecisionVote()" class="hidden px-3 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition shadow">
+              <i class="fa-solid fa-check-to-slot mr-1"></i> Open Decision Vote
+            </button>
+            <button id="btn-next-case" onclick="app.hostNextRound()" class="hidden px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition shadow">
               Next Case <i class="fa-solid fa-chevron-right ml-1"></i>
             </button>
           </div>
@@ -465,20 +578,53 @@
             <!-- Flagged Cards Live List -->
             <div id="class-flagged-list" class="space-y-2.5 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
               <div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
-                No cards flagged yet this round. Students scan their hands and tap to flag relevant risks/potentials.
+                No cards flagged yet this round. Students scan their hands and tap to flag relevant risks/opportunities.
               </div>
             </div>
 
-            <!-- Host Selection / Promotion Actions -->
-            <div id="host-promotion-panel" class="hidden pt-3 border-t border-slate-100">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-navy">Host Final Selection (Target: 2-3 Risks, 2-3 Potentials):</span>
-                <button onclick="app.hostConfirmPromotedCards()" class="px-3 py-1.5 bg-navy text-white text-xs font-bold rounded-lg hover:bg-navy-dark transition">
-                  Confirm Selected Cards
+          </div>
+
+          <!-- Top Picks Vote Panel (Step 2) -->
+          <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-navy uppercase tracking-wider flex items-center space-x-2">
+                  <i class="fa-solid fa-list-ol text-gold-amber"></i>
+                  <span>Top Picks Vote: Top 2 Risks &amp; Top 2 Opportunities</span>
+                </h3>
+                <p class="text-[11px] text-slate-500">Vote for the flagged cards that matter most; results consolidate live on the host screen.</p>
+              </div>
+              <span id="cardvote-status-badge" class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                Waiting for Host
+              </span>
+            </div>
+
+            <!-- Player ballot -->
+            <div id="cardvote-ballot" class="hidden space-y-4">
+              <div>
+                <span class="text-[11px] font-bold text-risk-dark uppercase tracking-wide block mb-1.5">Pick your Top 2 Risks</span>
+                <div id="cardvote-risk-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-opp-dark uppercase tracking-wide block mb-1.5">Pick your Top 2 Opportunities</span>
+                <div id="cardvote-opp-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+              </div>
+              <div class="flex justify-end">
+                <button onclick="app.submitCardVote()" class="px-4 py-2 bg-navy hover:bg-navy-dark text-white text-xs font-bold rounded-xl transition shadow">
+                  Submit My Top Picks
                 </button>
               </div>
-              <div id="selected-cards-badges" class="flex flex-wrap gap-1.5 mt-2 min-h-8">
-                <!-- Badges -->
+            </div>
+
+            <!-- Consolidated tally -->
+            <div id="cardvote-tally" class="hidden space-y-3">
+              <div>
+                <span class="text-[11px] font-bold text-risk-dark uppercase tracking-wide block mb-1.5">Risks — Consolidated Votes</span>
+                <div id="cardvote-risk-tally" class="space-y-1.5"></div>
+              </div>
+              <div>
+                <span class="text-[11px] font-bold text-opp-dark uppercase tracking-wide block mb-1.5">Opportunities — Consolidated Votes</span>
+                <div id="cardvote-opp-tally" class="space-y-1.5"></div>
               </div>
             </div>
           </div>
@@ -537,14 +683,6 @@
               </button>
             </div>
 
-            <!-- Guardrail Input Box (Host / Designated Student) -->
-            <div id="guardrail-input-container" class="hidden space-y-2 pt-2 border-t border-slate-100">
-              <label class="block text-xs font-bold text-amber-900">
-                <i class="fa-solid fa-pencil mr-1"></i> Specify Concrete Guardrail Text:
-              </label>
-              <textarea id="guardrail-text-input" rows="2" placeholder="e.g., Mandatory human review and sign-off required before any automated decision affects a student's standing." class="w-full p-2.5 text-xs rounded-lg border border-amber-300 bg-amber-50 focus:ring-2 focus:ring-gold-amber outline-none"></textarea>
-            </div>
-
             <!-- Host Final Lock Decision Button -->
             <div id="host-lock-panel" class="hidden flex justify-end pt-2">
               <button onclick="app.hostCommitDecision()" class="px-5 py-2.5 bg-navy hover:bg-navy-dark text-white text-xs font-bold rounded-xl transition shadow flex items-center space-x-2">
@@ -552,6 +690,31 @@
                 <span>Lock Decision & Save to Notes Log</span>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persistent Decision Tracker Board -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h3 class="text-sm font-bold text-navy uppercase tracking-wider flex items-center space-x-2">
+            <i class="fa-solid fa-table-columns text-navy"></i>
+            <span>Session Decision Tracker</span>
+          </h3>
+          <p class="text-[11px] text-slate-500">Use case titles land in a column as soon as the class locks in a decision.</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-opp-light/30 border border-opp/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-opp-dark block">TO AI</span>
+            <div id="tracker-col-yes" class="space-y-1.5 min-h-10"></div>
+          </div>
+          <div class="bg-risk-light/30 border border-risk/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-risk-dark block">NOT TO AI</span>
+            <div id="tracker-col-no" class="space-y-1.5 min-h-10"></div>
+          </div>
+          <div class="bg-amber-50 border border-gold-amber/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-amber-900 block">WITH GUARDRAILS</span>
+            <div id="tracker-col-guard" class="space-y-1.5 min-h-10"></div>
           </div>
         </div>
       </div>
@@ -734,6 +897,27 @@
     </div>
   </div>
 
+  <!-- Guardrail Text Modal (Host, shown only when WITH GUARDRAILS wins the decision vote) -->
+  <div id="modal-guardrail" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 card-shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-shield-halved text-gold-amber"></i>
+          <span>Specify the Guardrails</span>
+        </h3>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        The class voted <strong>TO AI — WITH GUARDRAILS</strong> for "<span id="guardrail-modal-usecase" class="font-semibold text-navy">this use case</span>". Based on the class discussion, what specific guardrails need to be in place?
+      </p>
+      <textarea id="guardrail-modal-input" rows="3" placeholder="e.g., Mandatory human review and sign-off required before any automated decision affects a student's standing." class="w-full p-3 text-xs rounded-xl border border-amber-300 bg-amber-50 focus:ring-2 focus:ring-gold-amber outline-none"></textarea>
+      <div class="flex justify-end pt-1">
+        <button onclick="app.submitGuardrailModal()" class="px-5 py-2.5 bg-navy hover:bg-navy-dark text-white text-xs font-bold rounded-xl transition shadow">
+          Save Guardrails & Lock Decision
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Help & Rules Modal -->
   <div id="modal-help" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 card-shadow-lg border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
@@ -753,10 +937,11 @@
           "To AI or Not to AI?" is a case-method card game designed to build shared vocabulary around the risks and opportunities of using AI in a given role.
         </p>
         <ol class="list-decimal pl-4 space-y-1">
-          <li><strong>Dealing:</strong> 26 Risk & Potential cards are distributed across players as their watch area.</li>
+          <li><strong>Dealing:</strong> 26 Risk & Opportunity cards are distributed across players as their watch area.</li>
           <li><strong>Scenario Reveal:</strong> Host reveals a Use Case scenario (1 of 18).</li>
-          <li><strong>Scanning & Flagging:</strong> Players inspect their dealt hand and flag relevant Risk/Potential cards.</li>
-          <li><strong>Debate & Consensus:</strong> Group selects 2-3 Risks and 2-3 Potentials that apply.</li>
+          <li><strong>Scanning & Flagging:</strong> Players inspect their dealt hand and flag relevant Risk/Opportunity cards.</li>
+          <li><strong>Top Picks Vote:</strong> Everyone votes for their top 2 Risks and top 2 Opportunities; results are consolidated on the host screen.</li>
+          <li><strong>Debate & Consensus:</strong> Group discusses the top-voted Risks and Opportunities that apply.</li>
           <li><strong>Decision:</strong> Commit to <strong>TO AI</strong>, <strong>NOT TO AI</strong>, or <strong>TO AI — WITH GUARDRAILS</strong> (plus guardrail text).</li>
         </ol>
       </div>
@@ -809,7 +994,7 @@
           {"n": 13, "title": "Cognitive Surrender", "body": "People stop thinking it through and just defer to the AI's answer — judgment quietly atrophies as outputs go unquestioned, even on calls that deserve real scrutiny."},
           {"n": 14, "title": "Environmental Impact", "body": "Training and running AI models consumes significant energy and water, and adds real strain to data centers — a cost that can sit uneasily next to an institution's own sustainability commitments."}
         ],
-        "potentials": [
+        "opportunities": [
           {"n": 1, "title": "Time & Efficiency", "body": "AI completes routine or high-volume tasks far faster than manual work, freeing up staff time."},
           {"n": 2, "title": "Scale & Reach", "body": "AI can serve far more people at once than human staff alone — e.g. answering thousands of inquiries."},
           {"n": 3, "title": "24/7 Availability", "body": "AI can provide support or information outside normal working hours, any day of the week."},
@@ -861,7 +1046,7 @@
           {"n": 13, "title": "Cognitive Surrender", "body": "Teachers stop double-checking AI-generated grades, feedback, or content and just accept it — even on calls that deserve a closer look."},
           {"n": 14, "title": "Environmental Impact", "body": "The AI tools teachers use every day run on data centers that consume real energy and water — a cost worth weighing against the time saved."}
         ],
-        "potentials": [
+        "opportunities": [
           {"n": 1, "title": "Time & Efficiency", "body": "AI can turn hours of grading or lesson-planning into minutes, freeing up time for actual teaching and one-on-one support."},
           {"n": 2, "title": "Scale & Reach", "body": "One teacher's after-hours chatbot can answer dozens of students' questions at once — something no single teacher could do alone."},
           {"n": 3, "title": "24/7 Availability", "body": "Students can get homework help or a concept explained at 11pm, not just during school hours."},
@@ -913,7 +1098,7 @@
           {"n": 13, "title": "Cognitive Surrender", "body": "It's easy to stop thinking something through yourself and just take whatever AI says as the answer — even when it's worth double-checking."},
           {"n": 14, "title": "Environmental Impact", "body": "Every AI chat you send runs on a data center that uses real energy and water — a small cost that adds up across millions of students doing the same thing."}
         ],
-        "potentials": [
+        "opportunities": [
           {"n": 1, "title": "Time & Efficiency", "body": "AI can get you through repetitive tasks — formatting citations, catching a typo — faster, leaving more time for the parts that actually require thinking."},
           {"n": 2, "title": "Scale & Reach", "body": "A single AI study tool can help you review material in ways that would otherwise require hiring a tutor or finding a study group at the right time."},
           {"n": 3, "title": "24/7 Availability", "body": "AI can explain a concept or quiz you at 1am before an exam, when no professor, TA, or classmate is around."},
@@ -935,6 +1120,16 @@
       ]
     };
 
+    // Bundled default Firebase config so multi-device sync works out of the box.
+    const DEFAULT_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyDsqsCdfl_u0COkzdH5fUF60VUFLs-TcDo",
+      authDomain: "aiornot-4b2aa.firebaseapp.com",
+      projectId: "aiornot-4b2aa",
+      storageBucket: "aiornot-4b2aa.firebasestorage.app",
+      messagingSenderId: "57714161822",
+      appId: "1:57714161822:web:6ccfb6b60a181fbc38638f"
+    };
+
     class CardGameApp {
       constructor() {
         this.state = {
@@ -950,14 +1145,13 @@
           isFirebaseConnected: false,
           sessionData: null,
           myHand: [],
-          myFlags: {}, // cardKey: note
+          myFlags: {}, // cardKey: true
           myVote: null,
-          promotedCards: [],
-          votingOpen: false,
           notesLog: []
         };
 
         this.db = null;
+        this.allHands = null;
         this.unsubscribeSession = null;
         this.timerInterval = null;
         this.timerSeconds = 420;
@@ -965,24 +1159,22 @@
 
       init() {
         const savedConfig = localStorage.getItem('to_ai_firebase_config');
+        let configToUse = DEFAULT_FIREBASE_CONFIG;
         if (savedConfig) {
           try {
-            const configObj = JSON.parse(savedConfig);
-            this.initFirebase(configObj);
-            document.getElementById('firebase-config-input').value = savedConfig;
-          } catch(e) { console.warn("Invalid saved firebase config"); }
+            configToUse = JSON.parse(savedConfig);
+          } catch(e) { console.warn("Invalid saved firebase config, using bundled default"); }
         }
 
-        const savedSessionToken = localStorage.getItem('to_ai_session_token');
-        if (savedSessionToken) {
-          // Reconnect capability hint
-          console.log("Found existing session token:", savedSessionToken);
-        }
+        try {
+          this.initFirebase(configToUse, { silent: true });
+          document.getElementById('firebase-config-input').value = JSON.stringify(configToUse, null, 2);
+        } catch(e) { console.warn("Firebase auto-connect failed, continuing in local mode"); }
 
         this.renderView('landing');
       }
 
-      initFirebase(config) {
+      initFirebase(config, opts = {}) {
         try {
           if (window.FirebaseSDK) {
             const { initializeApp, getFirestore } = window.FirebaseSDK;
@@ -992,12 +1184,54 @@
             
             document.getElementById('cloud-status-text').textContent = "Cloud Live Sync";
             document.getElementById('btn-cloud-config').classList.add('bg-emerald-900', 'border-emerald-700');
-            this.showToast("Connected to Firebase Firestore Cloud!", "success");
+            if (!opts.silent) this.showToast("Connected to Firebase Firestore Cloud!", "success");
           }
         } catch(err) {
           console.error("Firebase init failed:", err);
-          this.showToast("Failed to initialize Firebase: " + err.message, "error");
+          if (!opts.silent) this.showToast("Failed to initialize Firebase: " + err.message, "error");
         }
+      }
+
+      /* Cloud sync helpers — used by both host and player devices */
+      syncSessionToFirebase() {
+        if (!this.state.isFirebaseConnected || !this.db || !this.state.roomCode) return;
+        try {
+          const { doc, setDoc } = window.FirebaseSDK;
+          setDoc(doc(this.db, 'sessions', this.state.roomCode), this.state.sessionData, { merge: true })
+            .catch(err => console.warn('Cloud sync failed:', err));
+        } catch(err) { console.warn('Cloud sync failed:', err); }
+      }
+
+      persistSessionData(updates) {
+        if (!this.state.isFirebaseConnected || !this.db || !this.state.roomCode) return;
+        try {
+          const { doc, updateDoc } = window.FirebaseSDK;
+          updateDoc(doc(this.db, 'sessions', this.state.roomCode), updates)
+            .catch(err => console.warn('Cloud sync failed:', err));
+        } catch(err) { console.warn('Cloud sync failed:', err); }
+      }
+
+      subscribeToSession(roomCode) {
+        if (!this.state.isFirebaseConnected || !this.db) return;
+        if (this.unsubscribeSession) this.unsubscribeSession();
+        const { doc, onSnapshot } = window.FirebaseSDK;
+        this.unsubscribeSession = onSnapshot(doc(this.db, 'sessions', roomCode), (snap) => {
+          if (!snap.exists()) return;
+          this.state.sessionData = snap.data();
+          this.onSessionDataChanged();
+        });
+      }
+
+      onSessionDataChanged() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        this.state.currentRoundIndex = sd.currentRoundIndex || 0;
+        this.state.myFlags = {};
+        ((sd.flags && sd.flags[this.state.playerId]) || []).forEach(k => this.state.myFlags[k] = true);
+
+        const activeView = document.querySelector('main > section:not(.hidden)')?.id;
+        if (activeView === 'view-lobby') this.updateLobbyUI();
+        if (activeView === 'view-round-class') this.initRoundViewClass();
       }
 
       /* View Switcher */
@@ -1074,10 +1308,15 @@
           players: [
             { id: this.state.playerId, name: hostName, isHost: true, group: 'Group 1' }
           ],
-          flaggedCards: {}, // key -> count
-          votes: { yes: 0, no: 0, guard: 0 },
-          votingOpen: false,
-          promotedCards: [],
+          phase: 'flagging', // flagging -> card_vote -> decision_vote -> decided
+          flags: {}, // playerId -> [cardKey,...]
+          cardVotes: {}, // playerId -> { risks:[cardKey,...], opportunities:[cardKey,...] }
+          decisionVotes: {}, // playerId -> 'TO AI' | 'NOT TO AI' | 'TO AI — WITH GUARDRAILS'
+          decision: null,
+          guardrailText: '',
+          topRisks: [],
+          topOpportunities: [],
+          decisionBoard: { yes: [], no: [], guard: [] },
           notesLog: [],
           groups: playMode === 'small_groups' ? [
             { id: 'group_1', name: 'Group 1 — Delta', currentRoundIndex: 0, driverId: this.state.playerId, notesLog: [] },
@@ -1091,10 +1330,11 @@
 
         if (this.state.isFirebaseConnected && this.db) {
           this.syncSessionToFirebase();
+          this.subscribeToSession(roomCode);
         }
       }
 
-      joinSession(e) {
+      async joinSession(e) {
         e.preventDefault();
         const code = document.getElementById('join-room-code').value.trim().toUpperCase();
         const name = document.getElementById('join-player-name').value.trim();
@@ -1104,6 +1344,30 @@
         this.state.role = 'player';
         this.state.playerName = name;
         this.state.roomCode = code;
+
+        if (this.state.isFirebaseConnected && this.db) {
+          try {
+            const { doc, getDoc, updateDoc } = window.FirebaseSDK;
+            const ref = doc(this.db, 'sessions', code);
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+              const data = snap.data();
+              const newPlayer = { id: this.state.playerId, name, isHost: false, group: 'Group 1' };
+              const players = [...(data.players || []), newPlayer];
+              await updateDoc(ref, { players });
+              this.state.sessionData = { ...data, players };
+              this.subscribeToSession(code);
+              this.updateLobbyUI();
+              this.renderView('lobby');
+              this.showToast(`Joined session ${code}!`, 'success');
+              return;
+            }
+            this.showToast(`Room ${code} was not found in the cloud.`, 'error');
+            return;
+          } catch(err) {
+            console.warn('Cloud join failed, falling back to local session:', err);
+          }
+        }
 
         if (this.state.sessionData && this.state.sessionData.roomCode === code) {
           // Join existing local session
@@ -1152,9 +1416,15 @@
             { id: 'sim_2', name: 'Jordan Student', isHost: false },
             { id: 'sim_3', name: 'Taylor Student', isHost: false }
           ],
-          flaggedCards: {},
-          votes: { yes: 0, no: 0, guard: 0 },
-          votingOpen: false,
+          phase: 'flagging',
+          flags: {},
+          cardVotes: {},
+          decisionVotes: {},
+          decision: null,
+          guardrailText: '',
+          topRisks: [],
+          topOpportunities: [],
+          decisionBoard: { yes: [], no: [], guard: [] },
           notesLog: []
         };
 
@@ -1226,6 +1496,7 @@
 
         // Deal cards across participants round-robin
         this.dealCardsToPlayers();
+        this.resetRoundState();
 
         if (this.state.playMode === 'whole_class') {
           this.initRoundViewClass();
@@ -1235,6 +1506,13 @@
           this.renderView('small-groups');
         }
 
+        this.persistSessionData({
+          status: 'playing',
+          phase: 'flagging',
+          flags: this.state.sessionData.flags,
+          currentRoundIndex: 0
+        });
+
         this.startTimer(this.state.timerMinutes * 60);
       }
 
@@ -1242,8 +1520,8 @@
         const edition = this.state.edition;
         const dataset = GAME_DATA[edition];
         const risks = dataset.risks.map(r => ({ ...r, type: 'risk' }));
-        const potentials = dataset.potentials.map(p => ({ ...p, type: 'potential' }));
-        const allCards = [...risks, ...potentials]; // 26 cards total
+        const opportunities = dataset.opportunities.map(p => ({ ...p, type: 'opportunity' }));
+        const allCards = [...risks, ...opportunities]; // 26 cards total
 
         const players = this.state.sessionData.players;
         const hands = {};
@@ -1257,9 +1535,42 @@
           }
         });
 
+        this.allHands = hands;
+
         // Set local player's hand
         this.state.myHand = hands[this.state.playerId] || allCards.slice(0, 4); // fallback
         document.getElementById('hand-card-count').textContent = this.state.myHand.length;
+      }
+
+      /* Resets everything that is scoped to a single round (flags, votes, decision) */
+      resetRoundState() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        sd.phase = 'flagging';
+        sd.flags = {};
+        sd.cardVotes = {};
+        sd.decisionVotes = {};
+        sd.decision = null;
+        sd.guardrailText = '';
+        sd.topRisks = [];
+        sd.topOpportunities = [];
+        this.state.myFlags = {};
+        this.state.myVote = null;
+        this.simulateSimPlayerFlags();
+      }
+
+      /* Demo/mock-engine helper: gives simulated players something flagged in their hand each round */
+      simulateSimPlayerFlags() {
+        const sd = this.state.sessionData;
+        if (!sd || !this.allHands) return;
+        (sd.players || []).forEach(p => {
+          if (!p.id.startsWith('sim_')) return;
+          const hand = this.allHands[p.id] || [];
+          if (hand.length === 0) return;
+          const shuffled = [...hand].sort(() => Math.random() - 0.5);
+          const picks = shuffled.slice(0, Math.min(3, hand.length));
+          sd.flags[p.id] = picks.map(c => `${c.type}_${c.n}`);
+        });
       }
 
       initRoundViewClass() {
@@ -1279,17 +1590,12 @@
         // Host controls visibility
         if (this.state.role === 'host') {
           document.getElementById('host-round-controls').classList.remove('hidden');
-          document.getElementById('host-promotion-panel').classList.remove('hidden');
-          document.getElementById('host-lock-panel').classList.remove('hidden');
-          document.getElementById('guardrail-input-container').classList.remove('hidden');
         } else {
           document.getElementById('host-round-controls').classList.add('hidden');
-          document.getElementById('host-promotion-panel').classList.add('hidden');
-          document.getElementById('host-lock-panel').classList.add('hidden');
-          document.getElementById('guardrail-input-container').classList.add('hidden');
         }
 
-        this.updateFlaggedSummary();
+        this.renderPhaseUI();
+        this.renderDecisionTracker();
       }
 
       renderPlayerHand() {
@@ -1327,30 +1633,41 @@
         if (this.state.myFlags[cardKey]) {
           delete this.state.myFlags[cardKey];
         } else {
-          this.state.myFlags[cardKey] = 'Flagged by student';
+          this.state.myFlags[cardKey] = true;
+        }
+
+        const sd = this.state.sessionData;
+        if (sd) {
+          if (!sd.flags) sd.flags = {};
+          sd.flags[this.state.playerId] = Object.keys(this.state.myFlags);
         }
 
         this.renderPlayerHand();
         this.updateFlaggedSummary();
+        this.persistSessionData({ [`flags.${this.state.playerId}`]: Object.keys(this.state.myFlags) });
+      }
+
+      /* Aggregates every player's flagged cardKeys into { cardKey: count } */
+      aggregateFlagCounts() {
+        const sd = this.state.sessionData;
+        const flags = (sd && sd.flags) || {};
+        const counts = {};
+        Object.values(flags).forEach(cardKeys => {
+          (cardKeys || []).forEach(key => { counts[key] = (counts[key] || 0) + 1; });
+        });
+        return counts;
       }
 
       updateFlaggedSummary() {
         const flaggedList = document.getElementById('class-flagged-list');
         const dataset = GAME_DATA[this.state.edition];
+        const counts = this.aggregateFlagCounts();
+        const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
 
-        // Combine flags across current session
-        const flagCounts = { ...this.state.myFlags };
-        // Add simulated flags for vibrant preview
-        if (Object.keys(flagCounts).length === 0) {
-          flagCounts['risk_1'] = true;
-          flagCounts['potential_1'] = true;
-        }
-
-        const keys = Object.keys(flagCounts);
         document.getElementById('flagged-total-badge').textContent = `${keys.length} Flagged Cards`;
 
         if (keys.length === 0) {
-          flaggedList.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">No cards flagged yet this round.</div>`;
+          flaggedList.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">No cards flagged yet this round. Students scan their hands and tap to flag relevant risks/opportunities.</div>`;
           return;
         }
 
@@ -1358,124 +1675,409 @@
           const [type, nStr] = key.split('_');
           const n = parseInt(nStr);
           const isRisk = type === 'risk';
-          const pool = isRisk ? dataset.risks : dataset.potentials;
+          const pool = isRisk ? dataset.risks : dataset.opportunities;
           const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}`, body: '' };
-
-          const isPromoted = this.state.promotedCards.includes(key);
 
           return `
             <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between text-xs space-x-2">
               <div class="flex-1">
                 <div class="flex items-center space-x-2 mb-1">
                   <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${isRisk ? 'bg-risk text-white' : 'bg-opp text-white'}">
-                    ${isRisk ? 'Risk' : 'Potential'} #${n}
+                    ${isRisk ? 'Risk' : 'Opportunity'} #${n}
                   </span>
                   <span class="font-bold text-navy">${cardObj.title}</span>
                 </div>
                 <p class="text-[11px] text-slate-600 line-clamp-2">${cardObj.body}</p>
               </div>
-              ${this.state.role === 'host' ? `
-                <button onclick="app.togglePromoteCard('${key}')" class="px-2.5 py-1 text-[10px] font-bold rounded ${isPromoted ? 'bg-navy text-white' : 'bg-slate-200 text-slate-700'}">
-                  ${isPromoted ? 'Promoted' : 'Promote'}
-                </button>
-              ` : ''}
+              <span class="px-2 py-1 text-[10px] font-bold rounded bg-navy text-white whitespace-nowrap">${counts[key]} flag${counts[key] === 1 ? '' : 's'}</span>
             </div>
           `;
         }).join('');
       }
 
-      togglePromoteCard(cardKey) {
-        const idx = this.state.promotedCards.indexOf(cardKey);
-        if (idx >= 0) {
-          this.state.promotedCards.splice(idx, 1);
+      /* ---- Step Progress + Phase Rendering ---- */
+      renderPhaseUI() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        const phase = sd.phase || 'flagging';
+        const isHost = this.state.role === 'host';
+
+        const stepBadge = document.getElementById('phase-step-badge');
+        const btnCardVote = document.getElementById('btn-open-cardvote');
+        const btnDecisionVote = document.getElementById('btn-open-decisionvote');
+        const btnNextCase = document.getElementById('btn-next-case');
+
+        const labels = {
+          flagging: 'Step 1: Flag Risks & Opportunities',
+          card_vote: 'Step 2: Vote Top Picks',
+          decision_vote: 'Step 3: Vote the Decision',
+          decided: 'Decision Locked'
+        };
+        if (stepBadge) stepBadge.textContent = labels[phase] || labels.flagging;
+
+        if (isHost) {
+          btnCardVote.classList.toggle('hidden', phase !== 'flagging');
+          btnDecisionVote.classList.toggle('hidden', phase !== 'card_vote');
+          btnNextCase.classList.toggle('hidden', phase !== 'decided');
         } else {
-          if (this.state.promotedCards.length < 6) {
-            this.state.promotedCards.push(cardKey);
-          } else {
-            this.showToast("Maximum 6 promoted cards per round.", "info");
-          }
+          [btnCardVote, btnDecisionVote, btnNextCase].forEach(b => b.classList.add('hidden'));
         }
+
         this.updateFlaggedSummary();
-        this.renderPromotedBadges();
+        this.renderCardVotePanel();
+        this.renderDecisionVotePanel();
       }
 
-      renderPromotedBadges() {
-        const container = document.getElementById('selected-cards-badges');
-        container.innerHTML = this.state.promotedCards.map(key => `
-          <span class="px-2.5 py-1 bg-navy text-white text-[10px] font-bold rounded-md flex items-center space-x-1">
-            <span>${key.replace('_', ' #')}</span>
-            <i class="fa-solid fa-xmark ml-1 cursor-pointer" onclick="app.togglePromoteCard('${key}')"></i>
-          </span>
-        `).join('');
+      /* ---- Step 2: Top Picks Vote ---- */
+      hostOpenTopPicksVote() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        const flaggedKeys = Object.keys(this.aggregateFlagCounts());
+        if (flaggedKeys.length === 0) {
+          this.showToast("No cards have been flagged yet.", "info");
+          return;
+        }
+        sd.phase = 'card_vote';
+        sd.cardVotes = {};
+        this.simulateCardVotes(flaggedKeys);
+        this.persistSessionData({ phase: 'card_vote', cardVotes: sd.cardVotes });
+        this.showToast("Top Picks Vote is now open to all devices!", "success");
+        this.renderPhaseUI();
       }
 
-      hostOpenVoting() {
-        this.state.votingOpen = true;
-        document.getElementById('voting-status-badge').textContent = "Voting Open!";
-        document.getElementById('voting-status-badge').className = "px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full animate-pulse";
+      pickRandomN(arr, n) {
+        const copy = [...arr];
+        const picked = [];
+        while (copy.length && picked.length < n) {
+          picked.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
+        }
+        return picked;
+      }
 
-        ['btn-vote-yes', 'btn-vote-no', 'btn-vote-guard'].forEach(id => {
-          document.getElementById(id).removeAttribute('disabled');
+      simulateCardVotes(flaggedKeys) {
+        const sd = this.state.sessionData;
+        const riskKeys = flaggedKeys.filter(k => k.startsWith('risk_'));
+        const oppKeys = flaggedKeys.filter(k => k.startsWith('opportunity_'));
+        (sd.players || []).forEach(p => {
+          if (!p.id.startsWith('sim_')) return;
+          sd.cardVotes[p.id] = {
+            risks: this.pickRandomN(riskKeys, 2),
+            opportunities: this.pickRandomN(oppKeys, 2)
+          };
+        });
+      }
+
+      renderCardVotePanel() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        const phase = sd.phase || 'flagging';
+        const ballotEl = document.getElementById('cardvote-ballot');
+        const tallyEl = document.getElementById('cardvote-tally');
+        const statusBadge = document.getElementById('cardvote-status-badge');
+
+        if (phase === 'flagging') {
+          statusBadge.textContent = 'Waiting for Host';
+          statusBadge.className = 'px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full';
+          ballotEl.classList.add('hidden');
+          tallyEl.classList.add('hidden');
+          return;
+        }
+
+        statusBadge.textContent = phase === 'card_vote' ? 'Voting Open!' : 'Voting Closed';
+        statusBadge.className = phase === 'card_vote'
+          ? 'px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full animate-pulse'
+          : 'px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full';
+
+        const alreadySubmitted = !!(sd.cardVotes && sd.cardVotes[this.state.playerId]);
+
+        if (phase === 'card_vote' && this.state.role !== 'host' && !alreadySubmitted) {
+          ballotEl.classList.remove('hidden');
+          tallyEl.classList.add('hidden');
+          this.renderCardVoteBallot();
+        } else {
+          ballotEl.classList.add('hidden');
+          tallyEl.classList.remove('hidden');
+          this.renderCardVoteTally();
+        }
+      }
+
+      renderCardVoteBallot() {
+        const dataset = GAME_DATA[this.state.edition];
+        const counts = this.aggregateFlagCounts();
+        const riskKeys = Object.keys(counts).filter(k => k.startsWith('risk_'));
+        const oppKeys = Object.keys(counts).filter(k => k.startsWith('opportunity_'));
+
+        const renderOptions = (keys, isRisk) => keys.map(key => {
+          const n = parseInt(key.split('_')[1]);
+          const pool = isRisk ? dataset.risks : dataset.opportunities;
+          const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}` };
+          return `
+            <label class="flex items-center space-x-2 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer">
+              <input type="checkbox" class="cardvote-option" data-type="${isRisk ? 'risks' : 'opportunities'}" value="${key}">
+              <span class="font-semibold text-navy">${cardObj.title}</span>
+            </label>
+          `;
+        }).join('') || `<p class="text-[11px] text-slate-400 italic">No flagged cards in this category yet.</p>`;
+
+        document.getElementById('cardvote-risk-options').innerHTML = renderOptions(riskKeys, true);
+        document.getElementById('cardvote-opp-options').innerHTML = renderOptions(oppKeys, false);
+      }
+
+      submitCardVote() {
+        const checked = Array.from(document.querySelectorAll('.cardvote-option:checked'));
+        const risks = checked.filter(c => c.dataset.type === 'risks').map(c => c.value);
+        const opportunities = checked.filter(c => c.dataset.type === 'opportunities').map(c => c.value);
+
+        if (risks.length > 2 || opportunities.length > 2) {
+          this.showToast("Pick at most 2 Risks and 2 Opportunities.", "info");
+          return;
+        }
+
+        const sd = this.state.sessionData;
+        if (!sd.cardVotes) sd.cardVotes = {};
+        sd.cardVotes[this.state.playerId] = { risks, opportunities };
+        this.persistSessionData({ [`cardVotes.${this.state.playerId}`]: { risks, opportunities } });
+        this.showToast("Top picks submitted!", "success");
+        this.renderCardVotePanel();
+      }
+
+      renderCardVoteTally() {
+        const sd = this.state.sessionData;
+        const dataset = GAME_DATA[this.state.edition];
+        const cardVotes = sd.cardVotes || {};
+
+        const riskCounts = {};
+        const oppCounts = {};
+        Object.values(cardVotes).forEach(v => {
+          (v.risks || []).forEach(k => riskCounts[k] = (riskCounts[k] || 0) + 1);
+          (v.opportunities || []).forEach(k => oppCounts[k] = (oppCounts[k] || 0) + 1);
         });
 
-        this.showToast("Voting is now open to all devices!", "success");
+        const renderTally = (counts, isRisk) => {
+          const keys = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+          if (keys.length === 0) return `<p class="text-[11px] text-slate-400 italic">No votes yet.</p>`;
+          const max = Math.max(...Object.values(counts));
+          return keys.map(key => {
+            const n = parseInt(key.split('_')[1]);
+            const pool = isRisk ? dataset.risks : dataset.opportunities;
+            const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}` };
+            const pct = Math.round((counts[key] / max) * 100);
+            return `
+              <div class="text-[11px]">
+                <div class="flex items-center justify-between mb-0.5">
+                  <span class="font-semibold text-navy">${cardObj.title}</span>
+                  <span class="font-bold text-slate-600">${counts[key]} vote${counts[key] === 1 ? '' : 's'}</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                  <div class="${isRisk ? 'bg-risk' : 'bg-opp'} h-1.5 rounded-full" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        };
+
+        document.getElementById('cardvote-risk-tally').innerHTML = renderTally(riskCounts, true);
+        document.getElementById('cardvote-opp-tally').innerHTML = renderTally(oppCounts, false);
+
+        sd.topRisks = Object.keys(riskCounts).sort((a, b) => riskCounts[b] - riskCounts[a]).slice(0, 2);
+        sd.topOpportunities = Object.keys(oppCounts).sort((a, b) => oppCounts[b] - oppCounts[a]).slice(0, 2);
+      }
+
+      /* ---- Step 3: Decision Vote ---- */
+      hostOpenDecisionVote() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        sd.phase = 'decision_vote';
+        sd.decisionVotes = {};
+        this.simulateDecisionVotes();
+        this.persistSessionData({
+          phase: 'decision_vote',
+          decisionVotes: sd.decisionVotes,
+          topRisks: sd.topRisks || [],
+          topOpportunities: sd.topOpportunities || []
+        });
+        this.showToast("Decision voting is now open to all devices!", "success");
+        this.renderPhaseUI();
+      }
+
+      simulateDecisionVotes() {
+        const sd = this.state.sessionData;
+        const choices = ['TO AI', 'NOT TO AI', 'TO AI — WITH GUARDRAILS'];
+        (sd.players || []).forEach(p => {
+          if (!p.id.startsWith('sim_')) return;
+          sd.decisionVotes[p.id] = choices[Math.floor(Math.random() * choices.length)];
+        });
+      }
+
+      tallyDecisionVotes() {
+        const sd = this.state.sessionData;
+        const votes = (sd && sd.decisionVotes) || {};
+        const tally = { yes: 0, no: 0, guard: 0 };
+        Object.values(votes).forEach(choice => {
+          if (choice === 'TO AI') tally.yes++;
+          else if (choice === 'NOT TO AI') tally.no++;
+          else if (choice === 'TO AI — WITH GUARDRAILS') tally.guard++;
+        });
+        return tally;
+      }
+
+      renderDecisionVotePanel() {
+        const sd = this.state.sessionData;
+        if (!sd) return;
+        const phase = sd.phase || 'flagging';
+        const statusBadge = document.getElementById('voting-status-badge');
+        const buttons = ['btn-vote-yes', 'btn-vote-no', 'btn-vote-guard'];
+
+        if (phase === 'decision_vote') {
+          statusBadge.textContent = 'Voting Open!';
+          statusBadge.className = 'px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full animate-pulse';
+          buttons.forEach(id => document.getElementById(id).removeAttribute('disabled'));
+        } else if (phase === 'decided') {
+          statusBadge.textContent = `Locked: ${sd.decision}`;
+          statusBadge.className = 'px-2.5 py-1 bg-navy text-white text-xs font-bold rounded-full';
+          buttons.forEach(id => document.getElementById(id).setAttribute('disabled', 'true'));
+        } else {
+          statusBadge.textContent = 'Discussion Phase';
+          statusBadge.className = 'px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full';
+          buttons.forEach(id => document.getElementById(id).setAttribute('disabled', 'true'));
+        }
+
+        const tally = this.tallyDecisionVotes();
+        const total = tally.yes + tally.no + tally.guard || 1;
+        document.getElementById('count-vote-yes').textContent = `${tally.yes} votes`;
+        document.getElementById('count-vote-no').textContent = `${tally.no} votes`;
+        document.getElementById('count-vote-guard').textContent = `${tally.guard} votes`;
+        document.getElementById('bar-vote-yes').style.width = `${(tally.yes / total) * 100}%`;
+        document.getElementById('bar-vote-no').style.width = `${(tally.no / total) * 100}%`;
+        document.getElementById('bar-vote-guard').style.width = `${(tally.guard / total) * 100}%`;
+
+        document.getElementById('host-lock-panel').classList.toggle('hidden', !(this.state.role === 'host' && phase === 'decision_vote'));
       }
 
       castVote(choice) {
-        if (!this.state.votingOpen && this.state.role !== 'host') {
+        const sd = this.state.sessionData;
+        if (!sd || sd.phase !== 'decision_vote') {
           this.showToast("Voting is not open yet.", "info");
           return;
         }
 
         this.state.myVote = choice;
+        if (!sd.decisionVotes) sd.decisionVotes = {};
+        sd.decisionVotes[this.state.playerId] = choice;
+        this.persistSessionData({ [`decisionVotes.${this.state.playerId}`]: choice });
         this.showToast(`Vote recorded: ${choice}`, "success");
-
-        // Simulate class voting distribution
-        const votes = { yes: 1, no: 0, guard: 2 };
-        if (choice === 'TO AI') votes.yes += 1;
-        if (choice === 'NOT TO AI') votes.no += 1;
-        if (choice === 'TO AI — WITH GUARDRAILS') votes.guard += 1;
-
-        const total = votes.yes + votes.no + votes.guard;
-        document.getElementById('count-vote-yes').textContent = `${votes.yes} votes`;
-        document.getElementById('count-vote-no').textContent = `${votes.no} votes`;
-        document.getElementById('count-vote-guard').textContent = `${votes.guard} votes`;
-
-        document.getElementById('bar-vote-yes').style.width = `${(votes.yes / total) * 100}%`;
-        document.getElementById('bar-vote-no').style.width = `${(votes.no / total) * 100}%`;
-        document.getElementById('bar-vote-guard').style.width = `${(votes.guard / total) * 100}%`;
+        this.renderDecisionVotePanel();
       }
 
+      /* ---- Locking the Decision (with Guardrail popup when needed) ---- */
       hostCommitDecision() {
+        const sd = this.state.sessionData;
+        if (!sd || sd.phase !== 'decision_vote') return;
+        const tally = this.tallyDecisionVotes();
+        const totalVotes = tally.yes + tally.no + tally.guard;
+        if (totalVotes === 0) {
+          this.showToast("No votes have been cast yet.", "info");
+          return;
+        }
+
+        let winner = 'TO AI';
+        let max = tally.yes;
+        if (tally.no > max) { winner = 'NOT TO AI'; max = tally.no; }
+        if (tally.guard > max) { winner = 'TO AI — WITH GUARDRAILS'; max = tally.guard; }
+
+        if (winner === 'TO AI — WITH GUARDRAILS') {
+          const useCase = GAME_DATA[this.state.edition].use_cases[this.state.currentRoundIndex % GAME_DATA[this.state.edition].use_cases.length];
+          document.getElementById('guardrail-modal-usecase').textContent = useCase.title;
+          document.getElementById('guardrail-modal-input').value = '';
+          document.getElementById('modal-guardrail').classList.remove('hidden');
+          return;
+        }
+
+        this.finalizeDecision(winner, '');
+      }
+
+      submitGuardrailModal() {
+        const text = document.getElementById('guardrail-modal-input').value.trim();
+        if (!text) {
+          this.showToast("Please describe the guardrails discussed by the class.", "info");
+          return;
+        }
+        document.getElementById('modal-guardrail').classList.add('hidden');
+        this.finalizeDecision('TO AI — WITH GUARDRAILS', text);
+      }
+
+      finalizeDecision(decision, guardrailText) {
+        const sd = this.state.sessionData;
         const edition = this.state.edition;
         const roundIdx = this.state.currentRoundIndex;
-        const useCase = GAME_DATA[edition].use_cases[roundIdx % 18];
-        const guardrailText = document.getElementById('guardrail-text-input').value.trim();
+        const useCase = GAME_DATA[edition].use_cases[roundIdx % GAME_DATA[edition].use_cases.length];
 
         const decisionEntry = {
           round: roundIdx + 1,
           useCaseTitle: useCase.title,
           category: useCase.cat,
-          decision: this.state.myVote || 'TO AI — WITH GUARDRAILS',
-          guardrailText: guardrailText || 'Human sign-off required prior to taking high-stakes action.',
-          promotedCards: [...this.state.promotedCards]
+          decision,
+          guardrailText: guardrailText || '',
+          topRisks: sd.topRisks || [],
+          topOpportunities: sd.topOpportunities || []
         };
 
-        this.state.notesLog.push(decisionEntry);
-        this.showToast(`Decision locked for Case #${roundIdx + 1}!`, "success");
+        if (!sd.notesLog) sd.notesLog = [];
+        sd.notesLog.push(decisionEntry);
+        this.state.notesLog = sd.notesLog;
 
-        // Reset for next
-        this.state.promotedCards = [];
-        this.state.myFlags = {};
-        document.getElementById('guardrail-text-input').value = '';
+        if (!sd.decisionBoard) sd.decisionBoard = { yes: [], no: [], guard: [] };
+        const column = decision === 'TO AI' ? 'yes' : decision === 'NOT TO AI' ? 'no' : 'guard';
+        sd.decisionBoard[column].push({ round: roundIdx + 1, title: useCase.title });
+
+        sd.phase = 'decided';
+        sd.decision = decision;
+        sd.guardrailText = guardrailText || '';
+
+        this.persistSessionData({
+          notesLog: sd.notesLog,
+          decisionBoard: sd.decisionBoard,
+          phase: 'decided',
+          decision,
+          guardrailText: sd.guardrailText
+        });
+
+        this.showToast(`Decision locked for Case #${roundIdx + 1}: ${decision}`, "success");
+        this.renderPhaseUI();
+        this.renderDecisionTracker();
+      }
+
+      renderDecisionTracker() {
+        const sd = this.state.sessionData;
+        const board = (sd && sd.decisionBoard) || { yes: [], no: [], guard: [] };
+        const renderCol = (items) => (items && items.length)
+          ? items.map(item => `<div class="px-2.5 py-1.5 bg-white/70 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700">#${item.round} — ${item.title}</div>`).join('')
+          : `<p class="text-[11px] text-slate-400 italic">No cases yet.</p>`;
+
+        document.getElementById('tracker-col-yes').innerHTML = renderCol(board.yes);
+        document.getElementById('tracker-col-no').innerHTML = renderCol(board.no);
+        document.getElementById('tracker-col-guard').innerHTML = renderCol(board.guard);
       }
 
       hostNextRound() {
+        const sd = this.state.sessionData;
         this.state.currentRoundIndex += 1;
-        if (this.state.currentRoundIndex >= 18) {
+        const useCases = GAME_DATA[this.state.edition].use_cases;
+        if (this.state.currentRoundIndex >= useCases.length) {
           this.showDebriefScreen();
           return;
         }
+        sd.currentRoundIndex = this.state.currentRoundIndex;
+        this.resetRoundState();
+        this.persistSessionData({
+          currentRoundIndex: sd.currentRoundIndex,
+          phase: 'flagging',
+          flags: sd.flags,
+          cardVotes: {},
+          decisionVotes: {},
+          decision: null,
+          guardrailText: ''
+        });
         this.initRoundViewClass();
         this.showToast(`Advanced to Use Case #${this.state.currentRoundIndex + 1}`, "info");
       }
