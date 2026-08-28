@@ -151,6 +151,9 @@
       </div>
 
       <div class="flex items-center space-x-2">
+        <button id="btn-fullscreen-toggle" onclick="app.toggleFullscreen()" class="p-2 rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition" title="Toggle Fullscreen">
+          <i id="icon-fullscreen-toggle" class="fa-solid fa-expand text-lg"></i>
+        </button>
         <button id="btn-cloud-config" onclick="app.showFirebaseModal()" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1">
           <i class="fa-solid fa-cloud text-gold-light"></i>
           <span id="cloud-status-text">Cloud Sync Config</span>
@@ -858,6 +861,9 @@
           <span id="solo-phase-badge" class="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-white/10 text-[11px] font-bold text-gold-light truncate">Step 1: Shuffling</span>
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <button onclick="app.toggleFullscreen()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow" title="Toggle Fullscreen">
+            <i id="icon-fullscreen-toggle-solo" class="fa-solid fa-expand sm:mr-1"></i><span class="hidden sm:inline">Fullscreen</span>
+          </button>
           <button onclick="app.showStandaloneTracker()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow">
             <i class="fa-solid fa-table-columns sm:mr-1"></i><span class="hidden sm:inline">Tracker</span>
           </button>
@@ -1353,7 +1359,28 @@
           document.getElementById('firebase-config-input').value = JSON.stringify(configToUse, null, 2);
         } catch(e) { console.warn("Firebase auto-connect failed, continuing in local mode"); }
 
+        document.addEventListener('fullscreenchange', () => this.syncFullscreenIcon());
         this.renderView('landing');
+      }
+
+      toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            this.showToast("Fullscreen not available: " + err.message, "error");
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      syncFullscreenIcon() {
+        const isFullscreen = !!document.fullscreenElement;
+        ['icon-fullscreen-toggle', 'icon-fullscreen-toggle-solo'].forEach(id => {
+          const icon = document.getElementById(id);
+          if (!icon) return;
+          icon.classList.toggle('fa-expand', !isFullscreen);
+          icon.classList.toggle('fa-compress', isFullscreen);
+        });
       }
 
       initFirebase(config, opts = {}) {
@@ -1992,11 +2019,14 @@
         const renderOptions = (keys, isRisk) => keys.map(key => {
           const n = parseInt(key.split('_')[1]);
           const pool = isRisk ? dataset.risks : dataset.opportunities;
-          const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}` };
+          const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}`, body: '' };
           return `
-            <label class="flex items-center space-x-2 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer">
-              <input type="checkbox" class="cardvote-option" data-type="${isRisk ? 'risks' : 'opportunities'}" value="${key}">
-              <span class="font-semibold text-navy">${cardObj.title}</span>
+            <label class="flex items-start space-x-2 p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs cursor-pointer">
+              <input type="checkbox" class="cardvote-option mt-0.5" data-type="${isRisk ? 'risks' : 'opportunities'}" value="${key}">
+              <span>
+                <span class="font-semibold text-navy block">${cardObj.title}</span>
+                <span class="text-[10px] text-slate-600 leading-snug block mt-0.5">${cardObj.body}</span>
+              </span>
             </label>
           `;
         }).join('') || `<p class="text-[11px] text-slate-400 italic">No flagged cards in this category yet.</p>`;
@@ -2042,7 +2072,7 @@
           return keys.map(key => {
             const n = parseInt(key.split('_')[1]);
             const pool = isRisk ? dataset.risks : dataset.opportunities;
-            const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}` };
+            const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}`, body: '' };
             const pct = Math.round((counts[key] / max) * 100);
             return `
               <div class="text-[11px]">
@@ -2050,6 +2080,7 @@
                   <span class="font-semibold text-navy">${cardObj.title}</span>
                   <span class="font-bold text-slate-600">${counts[key]} vote${counts[key] === 1 ? '' : 's'}</span>
                 </div>
+                <p class="text-[10px] text-slate-600 leading-snug mb-1">${cardObj.body}</p>
                 <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div class="${isRisk ? 'bg-risk' : 'bg-opp'} h-1.5 rounded-full" style="width: ${pct}%"></div>
                 </div>
@@ -2524,10 +2555,12 @@
             <button type="button" onclick="app.toggleStandaloneCardSelect('risk', ${idx})" id="solo-card-risk-${idx}" class="w-full text-left p-2 rounded-lg border-2 border-risk/30 bg-risk-light/30 hover:border-risk transition">
               <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-risk text-white">Risk</span>
               <span class="block text-[11px] font-bold text-navy mt-1">${hand.risk.title}</span>
+              <span class="block text-[10px] text-slate-600 leading-snug mt-0.5">${hand.risk.body}</span>
             </button>
             <button type="button" onclick="app.toggleStandaloneCardSelect('opportunity', ${idx})" id="solo-card-opportunity-${idx}" class="w-full text-left p-2 rounded-lg border-2 border-opp/30 bg-opp-light/30 hover:border-opp transition">
               <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-opp text-white">Opportunity</span>
               <span class="block text-[11px] font-bold text-navy mt-1">${hand.opportunity.title}</span>
+              <span class="block text-[10px] text-slate-600 leading-snug mt-0.5">${hand.opportunity.body}</span>
             </button>
           </div>
         `).join('');
@@ -2585,7 +2618,8 @@
           <div class="p-3 rounded-xl border-2 ${p.type === 'risk' ? 'border-risk/30 bg-risk-light/30' : 'border-opp/30 bg-opp-light/30'}">
             <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${p.type === 'risk' ? 'bg-risk text-white' : 'bg-opp text-white'}">${p.type === 'risk' ? 'Risk' : 'Opportunity'}</span>
             <span class="block text-xs font-bold text-navy mt-1">${p.card.title}</span>
-            <span class="block text-[10px] text-slate-500">Picked by ${p.playerName}</span>
+            <span class="block text-[10px] text-slate-600 leading-snug mt-0.5">${p.card.body}</span>
+            <span class="block text-[10px] text-slate-500 mt-1">Picked by ${p.playerName}</span>
           </div>
         `).join('');
 
@@ -2656,8 +2690,8 @@
           category: currentCase.cat,
           decision: decisionLabel,
           guardrailText: guardrailText || '',
-          topRisks: (this.solo.pendingPicks || []).filter(p => p.type === 'risk').map(p => p.card.title),
-          topOpportunities: (this.solo.pendingPicks || []).filter(p => p.type === 'opportunity').map(p => p.card.title)
+          topRisks: (this.solo.pendingPicks || []).filter(p => p.type === 'risk').map(p => ({ title: p.card.title, body: p.card.body })),
+          topOpportunities: (this.solo.pendingPicks || []).filter(p => p.type === 'opportunity').map(p => ({ title: p.card.title, body: p.card.body }))
         };
 
         this.solo.notesLog.push(entry);
@@ -2691,8 +2725,8 @@
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${entry.decision.includes('NOT') ? 'bg-risk text-white' : entry.decision.includes('GUARDRAILS') ? 'bg-gold-amber text-white' : 'bg-opp text-white'}">${entry.decision}</span>
           </div>
           ${entry.guardrailText ? `<p class="italic text-slate-700">"Guardrail: ${entry.guardrailText}"</p>` : ''}
-          ${entry.topRisks.length ? `<p><strong>Top Risks:</strong> ${entry.topRisks.join(', ')}</p>` : ''}
-          ${entry.topOpportunities.length ? `<p><strong>Top Opportunities:</strong> ${entry.topOpportunities.join(', ')}</p>` : ''}
+          ${entry.topRisks.length ? `<div><strong>Top Risks:</strong><ul class="list-disc pl-4 mt-0.5 space-y-0.5">${entry.topRisks.map(r => `<li>${r.title} — ${r.body}</li>`).join('')}</ul></div>` : ''}
+          ${entry.topOpportunities.length ? `<div><strong>Top Opportunities:</strong><ul class="list-disc pl-4 mt-0.5 space-y-0.5">${entry.topOpportunities.map(o => `<li>${o.title} — ${o.body}</li>`).join('')}</ul></div>` : ''}
         `;
 
         document.getElementById('solo-postdecision-next-label').textContent = isLastRound ? 'Finish Session' : 'Next Case';
@@ -2729,8 +2763,8 @@
               <strong style="color:#1f3a5f;">Round #${item.round}: ${item.useCaseTitle} (${item.category})</strong>
               <span style="font-size:11px; font-weight:bold; padding:2px 8px; border-radius:9999px; color:#fff; background:${item.decision.includes('NOT') ? '#8f2d2d' : item.decision.includes('GUARDRAILS') ? '#b45309' : '#1f6d3d'};">${item.decision}</span>
             </div>
-            ${item.topRisks.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Risks:</strong> ${item.topRisks.join(', ')}</div>` : ''}
-            ${item.topOpportunities.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Opportunities:</strong> ${item.topOpportunities.join(', ')}</div>` : ''}
+            ${item.topRisks.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Risks:</strong><ul style="margin:2px 0 0 18px; padding:0;">${item.topRisks.map(r => `<li>${r.title} — ${r.body}</li>`).join('')}</ul></div>` : ''}
+            ${item.topOpportunities.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Opportunities:</strong><ul style="margin:2px 0 0 18px; padding:0;">${item.topOpportunities.map(o => `<li>${o.title} — ${o.body}</li>`).join('')}</ul></div>` : ''}
             ${item.guardrailText ? `<div style="font-size:12px; color:#334155; font-style:italic;">Guardrail: ${item.guardrailText}</div>` : ''}
           </div>
         `).join('') || `<p style="color:#94a3b8; font-size:12px;">No decisions logged yet.</p>`;
