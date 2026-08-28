@@ -1,0 +1,123 @@
+rules_version = '2';
+
+// Security model for "To AI or Not to AI?"
+//
+// There are no user accounts. Every device signs in with Firebase Anonymous
+// Auth (invisible, no login screen) so request.auth.uid is a stable,
+// per-device ID we can check against. That ID is what makes these rules
+// possible:
+//   - a player can only write to THEIR OWN player/flag/vote documents
+//   - only the host device (its uid is stored as hostUid on the session)
+//     — or, in Small Groups mode, the group's designated "driver" device,
+//     or any group member when the host chose "free-for-all" — can advance
+//     rounds, promote cards, or lock in a decision
+//
+// See README.md, "Firestore Security Rules explained", for a plain-English
+// walkthrough of what each block below prevents.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function session(roomCode) {
+      return get(/databases/$(database)/documents/sessions/$(roomCode));
+    }
+
+    function isHost(roomCode) {
+      return signedIn() && session(roomCode).data.hostUid == request.auth.uid;
+    }
+
+    function isSessionMember(roomCode) {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/sessions/$(roomCode)/players/$(request.auth.uid));
+    }
+
+    // Can this uid drive a group's round forward (reveal/promote/vote-open/lock/advance)?
+    function canControlGroup(roomCode, groupData) {
+      return isHost(roomCode) ||
+        (groupData.driverSetting == 'freeForAll' && isSessionMember(roomCode)) ||
+        (groupData.driverSetting != 'freeForAll' && groupData.driverUid == request.auth.uid);
+    }
+
+    function groupDoc(roomCode, groupId) {
+      return get(/databases/$(database)/documents/sessions/$(roomCode)/groups/$(groupId));
+    }
+
+    // ---------------- sessions/{roomCode} ----------------
+    match /sessions/{roomCode} {
+      // Anyone who already knows the room code may fetch this one document
+      // directly by ID. `list` (querying/browsing "all sessions") is denied
+      // below, so a room code can't be guessed by listing.
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if isHost(roomCode);
+
+      // ---------------- sessions/{roomCode}/groups/{groupId} ----------------
+      match /groups/{groupId} {
+        allow get, list: if signedIn();
+        allow create: if isHost(roomCode);
+        allow delete: if isHost(roomCode);
+        allow update: if
+          canControlGroup(roomCode, resource.data) ||
+          // first player to join an unclaimed "one driver" group may claim the seat
+          (resource.data.driverUid == null &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['driverUid']) &&
+           request.resource.data.driverUid == request.auth.uid);
+      }
+
+      // ---------------- sessions/{roomCode}/players/{uid} ----------------
+      match /players/{uid} {
+        allow get, list: if signedIn();
+        // a player may only ever create THEIR OWN doc (doc id must equal their uid)
+        allow create: if signedIn() && uid == request.auth.uid && request.resource.data.uid == request.auth.uid;
+        // a player can edit their own doc (e.g. their hand isn't normally touched by
+        // them, but reconnection logic reads/writes here); the host can also edit
+        // any player doc, which is what makes dealing hands / auto-split possible
+        allow update: if signedIn() && (uid == request.auth.uid || isHost(roomCode));
+        allow delete: if isHost(roomCode);
+      }
+
+      // ---------------- sessions/{roomCode}/rounds/{roundId} ----------------
+      match /rounds/{roundId} {
+        allow get, list: if signedIn();
+        allow create: if canControlGroup(roomCode, groupDoc(roomCode, request.resource.data.groupId).data);
+        allow update: if
+          canControlGroup(roomCode, groupDoc(roomCode, resource.data.groupId).data) ||
+          // any signed-in session member may adjust ONLY the live flag/vote
+          // tallies — this is what lets every student's tap update the
+          // shared board without funnelling every write through the host
+          (isSessionMember(roomCode) &&
+           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['flagTally', 'voteTally']));
+        allow delete: if isHost(roomCode);
+
+        // ---------------- .../rounds/{roundId}/playerFlags/{uid} ----------------
+        match /playerFlags/{uid} {
+          allow get, list: if signedIn();
+          allow create, update: if signedIn() && uid == request.auth.uid;
+          allow delete: if signedIn() && (uid == request.auth.uid || isHost(roomCode));
+        }
+
+        // ---------------- .../rounds/{roundId}/playerVotes/{uid} ----------------
+        match /playerVotes/{uid} {
+          allow get, list: if signedIn();
+          allow create, update: if signedIn() && uid == request.auth.uid;
+          allow delete: if signedIn() && (uid == request.auth.uid || isHost(roomCode));
+        }
+      }
+
+      // ---------------- sessions/{roomCode}/notesLog/{entryId} ----------------
+      match /notesLog/{entryId} {
+        allow get, list: if signedIn();
+        // written once, at the moment a group locks in a decision, by
+        // whoever was allowed to control that group's round
+        allow create: if canControlGroup(roomCode, groupDoc(roomCode, request.resource.data.groupId).data);
+        allow update: if false;
+        allow delete: if isHost(roomCode);
+      }
+    }
+  }
+}
