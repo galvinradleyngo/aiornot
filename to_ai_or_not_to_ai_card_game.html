@@ -850,7 +850,156 @@
       </div>
     </section>
 
+    <section id="view-standalone-round" class="hidden space-y-6">
+      <!-- Top bar -->
+      <div class="bg-navy rounded-2xl p-4 sm:p-6 text-white card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-gold-light uppercase tracking-wider block mb-1">Standalone Facilitator Mode</span>
+          <h2 class="text-lg sm:text-xl font-black text-white">Round <span id="solo-round-num">1</span> of <span id="solo-round-total">18</span></h2>
+        </div>
+        <button onclick="app.goHome()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow self-start md:self-auto">
+          <i class="fa-solid fa-right-from-bracket mr-1"></i> End Session
+        </button>
+      </div>
+
+      <!-- Instruction Banner -->
+      <div id="solo-instruction-banner" class="flash-banner bg-gold-amber text-white rounded-2xl px-5 py-3 text-center font-bold text-sm sm:text-base shadow">
+        Get ready...
+      </div>
+
+      <!-- Use Case Box -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 sm:p-8 text-center space-y-2">
+        <span id="solo-usecase-cat" class="inline-block px-3 py-1 bg-navy/10 text-navy text-[11px] font-bold uppercase tracking-wider rounded-full">Category</span>
+        <h2 id="solo-usecase-title" class="text-2xl sm:text-3xl font-black text-navy leading-snug">Loading Use Case...</h2>
+        <p id="solo-usecase-body" class="text-sm sm:text-base text-slate-600 max-w-3xl mx-auto">Loading scenario text...</p>
+      </div>
+
+      <!-- Shuffle / Deal Zone -->
+      <div id="solo-deal-zone" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Shuffle deck / player hand cards rendered by JS -->
+      </div>
+
+      <!-- Submit Vote Button -->
+      <div id="solo-submit-vote-wrap" class="hidden flex justify-center">
+        <button id="solo-submit-vote-btn" onclick="app.submitStandaloneVote()" disabled class="px-6 py-3 bg-navy hover:bg-navy-dark text-white font-bold rounded-xl text-sm shadow disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2">
+          <i class="fa-solid fa-check"></i>
+          <span>Submit Top Picks (<span id="solo-selected-count">0</span>/4)</span>
+        </button>
+      </div>
+
+      <!-- Selected Top 4 Summary -->
+      <div id="solo-selected-summary" class="hidden bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Top Picks for this Use Case</h3>
+        <div id="solo-selected-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- Decision Board -->
+      <div id="solo-decision-board" class="hidden bg-white rounded-2xl border border-slate-200 card-shadow p-6 space-y-5">
+        <h3 class="text-sm font-bold text-navy uppercase tracking-wider text-center">Drag the Use Case Card onto Your Decision</h3>
+
+        <div class="flex justify-center">
+          <div id="solo-usecase-chip" draggable="true" ondragstart="app.soloDragStart(event)" class="cursor-grab active:cursor-grabbing px-5 py-3 bg-navy text-white rounded-xl font-bold text-sm shadow-lg flex items-center space-x-2">
+            <i class="fa-solid fa-up-down-left-right"></i>
+            <span id="solo-usecase-chip-title">Use Case Title</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div id="solo-drop-yes" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'yes')" onclick="app.soloDrop(null,'yes')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-opp/40 bg-opp-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+            <i class="fa-solid fa-circle-check text-2xl text-opp"></i>
+            <span class="text-xs font-black uppercase tracking-wider text-opp-dark">TO AI</span>
+            <span class="text-[10px] text-slate-500">Use AI, largely as-is</span>
+          </div>
+          <div id="solo-drop-no" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'no')" onclick="app.soloDrop(null,'no')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-risk/40 bg-risk-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+            <i class="fa-solid fa-circle-xmark text-2xl text-risk"></i>
+            <span class="text-xs font-black uppercase tracking-wider text-risk-dark">NOT TO AI</span>
+            <span class="text-[10px] text-slate-500">Keep this fully human</span>
+          </div>
+          <div id="solo-drop-guard" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'guard')" onclick="app.soloDrop(null,'guard')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-gold-amber/40 bg-amber-50 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+            <i class="fa-solid fa-shield-halved text-2xl text-gold-amber"></i>
+            <span class="text-xs font-black uppercase tracking-wider text-amber-900">WITH GUARDRAILS</span>
+            <span class="text-[10px] text-slate-500">Use AI, with safeguards</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Decision Tracker -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
+        <h3 class="text-sm font-bold text-navy uppercase tracking-wider">Session Decision Tracker</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-opp-light/30 border border-opp/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-opp-dark block">TO AI</span>
+            <div id="solo-tracker-col-yes" class="space-y-1.5 min-h-10"></div>
+          </div>
+          <div class="bg-risk-light/30 border border-risk/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-risk-dark block">NOT TO AI</span>
+            <div id="solo-tracker-col-no" class="space-y-1.5 min-h-10"></div>
+          </div>
+          <div class="bg-amber-50 border border-gold-amber/30 rounded-xl p-3 space-y-2">
+            <span class="text-xs font-black uppercase tracking-wider text-amber-900 block">WITH GUARDRAILS</span>
+            <div id="solo-tracker-col-guard" class="space-y-1.5 min-h-10"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- Off-screen printable notes sheet, captured by html2canvas for Save Image/PDF -->
+  <div id="standalone-notes-export" style="position: fixed; top: -10000px; left: -10000px; width: 820px;" class="bg-white p-8 space-y-4">
+    <div class="text-center border-b border-slate-200 pb-4 mb-2">
+      <h2 class="text-2xl font-black text-navy">To AI or Not to AI? — Facilitator Notes</h2>
+      <p id="solo-export-subtitle" class="text-xs text-slate-500 mt-1"></p>
+    </div>
+    <div id="solo-export-rows" class="space-y-3"></div>
+  </div>
+
+  <!-- Standalone Mode: Guardrail Modal -->
+  <div id="modal-solo-guardrail" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 card-shadow-lg border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-shield-halved text-gold-amber"></i>
+          <span>Specify the Guardrails</span>
+        </h3>
+      </div>
+      <p class="text-xs text-slate-600 leading-relaxed">
+        What guardrails will you put in place to ensure "human in the loop" for "<span id="solo-guardrail-usecase" class="font-semibold text-navy">this use case</span>"?
+      </p>
+      <textarea id="solo-guardrail-input" rows="3" placeholder="e.g., Mandatory human review and sign-off required before any automated decision affects a student's standing." class="w-full p-3 text-xs rounded-xl border border-amber-300 bg-amber-50 focus:ring-2 focus:ring-gold-amber outline-none"></textarea>
+      <div class="flex justify-end pt-1">
+        <button onclick="app.submitStandaloneGuardrail()" class="px-5 py-2.5 bg-navy hover:bg-navy-dark text-white text-xs font-bold rounded-xl transition shadow">
+          Save Guardrails & Lock Decision
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standalone Mode: Post-Decision Popup -->
+  <div id="modal-solo-postdecision" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 card-shadow-lg border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-clipboard-check text-gold-amber"></i>
+          <span>Decision Logged!</span>
+        </h3>
+      </div>
+      <div id="solo-postdecision-summary" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-1.5"></div>
+      <p class="text-[11px] text-slate-500">This has been added to your notes sheet automatically.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+        <button onclick="app.exportStandaloneNotes('image')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-image"></i><span>Save Notes as Image</span>
+        </button>
+        <button onclick="app.exportStandaloneNotes('pdf')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-file-pdf"></i><span>Save Notes as PDF</span>
+        </button>
+      </div>
+      <button onclick="app.standaloneNextCase()" class="w-full px-5 py-3 bg-navy hover:bg-navy-dark text-white text-sm font-bold rounded-xl transition shadow flex items-center justify-center space-x-2">
+        <span id="solo-postdecision-next-label">Next Case</span>
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- Firebase Modal -->
   <div id="modal-firebase" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1155,6 +1304,19 @@
         this.unsubscribeSession = null;
         this.timerInterval = null;
         this.timerSeconds = 420;
+
+        // Standalone single-device facilitator mode (no room codes / no Firebase needed)
+        this.solo = {
+          edition: 'leadership',
+          players: [], // [{ name }]
+          roundIndex: 0,
+          hands: [], // [{ name, risk, opportunity }] for the current round
+          phase: 'idle', // dealing -> voting -> decision
+          selected: {}, // `${type}_${playerIdx}` -> true
+          notesLog: [],
+          decisionBoard: { yes: [], no: [], guard: [] },
+          pendingEntry: null
+        };
       }
 
       init() {
@@ -1236,7 +1398,7 @@
 
       /* View Switcher */
       renderView(viewId) {
-        ['landing', 'host-setup', 'lobby', 'round-class', 'small-groups', 'debrief'].forEach(id => {
+        ['landing', 'host-setup', 'standalone-setup', 'lobby', 'round-class', 'small-groups', 'standalone-round', 'debrief'].forEach(id => {
           const el = document.getElementById(`view-${id}`);
           if (el) el.classList.add('hidden');
         });
@@ -1246,7 +1408,7 @@
 
         // Header sync
         const statusEl = document.getElementById('header-status');
-        if (viewId === 'landing' || viewId === 'host-setup') {
+        if (viewId === 'landing' || viewId === 'host-setup' || viewId === 'standalone-setup' || viewId === 'standalone-round') {
           statusEl.classList.add('hidden');
         } else {
           statusEl.classList.remove('hidden');
@@ -2202,6 +2364,369 @@
         document.execCommand('copy');
         document.body.removeChild(temp);
         this.showToast("Notes log copied to clipboard!", "success");
+      }
+
+      /* =========================================================
+         STANDALONE SINGLE-DEVICE FACILITATOR MODE
+         No room codes, no Firebase — the host runs the whole game
+         on one screen while the class discusses out loud.
+      ========================================================= */
+
+      showStandaloneSetup() {
+        this.solo.players = [];
+        this.solo.roundIndex = 0;
+        this.solo.notesLog = [];
+        this.solo.decisionBoard = { yes: [], no: [], guard: [] };
+
+        const list = document.getElementById('solo-player-name-list');
+        list.innerHTML = '';
+        this.addStandalonePlayerField();
+        this.addStandalonePlayerField();
+        this.addStandalonePlayerField();
+
+        this.renderView('standalone-setup');
+      }
+
+      addStandalonePlayerField() {
+        const list = document.getElementById('solo-player-name-list');
+        const idx = list.children.length;
+        const row = document.createElement('div');
+        row.className = 'flex items-center space-x-2';
+        row.innerHTML = `
+          <input type="text" placeholder="Player ${idx + 1} name" class="solo-player-name-input flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none">
+          <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-risk px-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        `;
+        list.appendChild(row);
+      }
+
+      startStandaloneGame(e) {
+        e.preventDefault();
+        const edition = document.querySelector('input[name="solo-edition"]:checked').value;
+        const names = Array.from(document.querySelectorAll('.solo-player-name-input'))
+          .map((input, idx) => input.value.trim() || `Player ${idx + 1}`);
+
+        if (names.length === 0) {
+          this.showToast("Add at least one player.", "info");
+          return;
+        }
+
+        this.solo.edition = edition;
+        this.solo.players = names.map(name => ({ name }));
+        this.solo.roundIndex = 0;
+        this.solo.notesLog = [];
+        this.solo.decisionBoard = { yes: [], no: [], guard: [] };
+
+        this.renderStandaloneTracker();
+        this.renderView('standalone-round');
+        this.startStandaloneRound();
+      }
+
+      setStandaloneInstruction(text) {
+        const el = document.getElementById('solo-instruction-banner');
+        el.textContent = text;
+        el.classList.remove('flash-banner');
+        void el.offsetWidth; // restart the flash-in animation
+        el.classList.add('flash-banner');
+      }
+
+      dealStandaloneHands() {
+        const dataset = GAME_DATA[this.solo.edition];
+        const riskPool = this.pickRandomN(dataset.risks, dataset.risks.length);
+        const oppPool = this.pickRandomN(dataset.opportunities, dataset.opportunities.length);
+
+        this.solo.hands = this.solo.players.map((p, idx) => ({
+          name: p.name,
+          risk: riskPool[idx % riskPool.length],
+          opportunity: oppPool[idx % oppPool.length]
+        }));
+      }
+
+      startStandaloneRound() {
+        const useCases = GAME_DATA[this.solo.edition].use_cases;
+        const currentCase = useCases[this.solo.roundIndex % useCases.length];
+
+        this.solo.phase = 'dealing';
+        this.solo.selected = {};
+        this.solo.pendingPicks = [];
+
+        document.getElementById('solo-round-num').textContent = this.solo.roundIndex + 1;
+        document.getElementById('solo-round-total').textContent = useCases.length;
+        document.getElementById('solo-usecase-cat').textContent = currentCase.cat;
+        document.getElementById('solo-usecase-title').textContent = currentCase.title;
+        document.getElementById('solo-usecase-body').textContent = currentCase.body;
+
+        document.getElementById('solo-selected-summary').classList.add('hidden');
+        document.getElementById('solo-decision-board').classList.add('hidden');
+        document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
+
+        this.setStandaloneInstruction('Shuffling the deck...');
+        this.dealStandaloneHands();
+        this.playStandaloneShuffleAnimation();
+      }
+
+      playStandaloneShuffleAnimation() {
+        const zone = document.getElementById('solo-deal-zone');
+        zone.className = 'flex justify-center items-center py-10';
+        zone.innerHTML = Array.from({ length: 6 }).map((_, i) => `
+          <div class="shuffle-deck-card w-16 h-24 -ml-8 first:ml-0 rounded-lg bg-navy border-2 border-white shadow-lg" style="animation-delay:${i * 0.05}s; z-index:${i}"></div>
+        `).join('');
+
+        setTimeout(() => {
+          this.setStandaloneInstruction('Dealing cards to each player...');
+          this.renderStandaloneHands();
+        }, 900);
+      }
+
+      renderStandaloneHands() {
+        const zone = document.getElementById('solo-deal-zone');
+        zone.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+
+        zone.innerHTML = this.solo.hands.map((hand, idx) => `
+          <div class="deal-in bg-white rounded-xl border border-slate-200 card-shadow p-3 space-y-2" style="animation-delay:${idx * 0.12}s">
+            <span class="text-xs font-bold text-navy block truncate">${hand.name}</span>
+            <button type="button" onclick="app.toggleStandaloneCardSelect('risk', ${idx})" id="solo-card-risk-${idx}" class="w-full text-left p-2 rounded-lg border-2 border-risk/30 bg-risk-light/30 hover:border-risk transition">
+              <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-risk text-white">Risk</span>
+              <span class="block text-[11px] font-bold text-navy mt-1">${hand.risk.title}</span>
+            </button>
+            <button type="button" onclick="app.toggleStandaloneCardSelect('opportunity', ${idx})" id="solo-card-opportunity-${idx}" class="w-full text-left p-2 rounded-lg border-2 border-opp/30 bg-opp-light/30 hover:border-opp transition">
+              <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-opp text-white">Opportunity</span>
+              <span class="block text-[11px] font-bold text-navy mt-1">${hand.opportunity.title}</span>
+            </button>
+          </div>
+        `).join('');
+
+        this.solo.phase = 'voting';
+        document.getElementById('solo-submit-vote-wrap').classList.remove('hidden');
+        this.setStandaloneInstruction('Discuss, then tap your Top 2 Risks and Top 2 Opportunities!');
+        this.updateStandaloneSubmitButton();
+      }
+
+      toggleStandaloneCardSelect(type, idx) {
+        if (this.solo.phase !== 'voting') return;
+        const key = `${type}_${idx}`;
+        const currentCount = Object.keys(this.solo.selected).filter(k => k.startsWith(type + '_') && this.solo.selected[k]).length;
+
+        if (this.solo.selected[key]) {
+          delete this.solo.selected[key];
+        } else {
+          if (currentCount >= 2) {
+            this.showToast(`Already picked 2 ${type === 'risk' ? 'Risks' : 'Opportunities'}. Tap one to swap it out.`, 'info');
+            return;
+          }
+          this.solo.selected[key] = true;
+        }
+
+        const btn = document.getElementById(`solo-card-${type}-${idx}`);
+        const isSelected = !!this.solo.selected[key];
+        btn.classList.toggle('ring-2', isSelected);
+        btn.classList.toggle('ring-gold-amber', isSelected);
+        this.updateStandaloneSubmitButton();
+      }
+
+      updateStandaloneSubmitButton() {
+        const keys = Object.keys(this.solo.selected).filter(k => this.solo.selected[k]);
+        const riskCount = keys.filter(k => k.startsWith('risk_')).length;
+        const oppCount = keys.filter(k => k.startsWith('opportunity_')).length;
+        document.getElementById('solo-selected-count').textContent = riskCount + oppCount;
+        document.getElementById('solo-submit-vote-btn').disabled = !(riskCount === 2 && oppCount === 2);
+      }
+
+      submitStandaloneVote() {
+        const keys = Object.keys(this.solo.selected).filter(k => this.solo.selected[k]);
+        const picks = keys.map(key => {
+          const [type, idxStr] = key.split('_');
+          const idx = parseInt(idxStr);
+          const card = this.solo.hands[idx][type];
+          return { type, card, playerName: this.solo.hands[idx].name };
+        });
+
+        this.solo.phase = 'decision';
+        this.solo.pendingPicks = picks;
+        document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
+
+        const summaryEl = document.getElementById('solo-selected-cards');
+        summaryEl.innerHTML = picks.map(p => `
+          <div class="p-3 rounded-xl border-2 ${p.type === 'risk' ? 'border-risk/30 bg-risk-light/30' : 'border-opp/30 bg-opp-light/30'}">
+            <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${p.type === 'risk' ? 'bg-risk text-white' : 'bg-opp text-white'}">${p.type === 'risk' ? 'Risk' : 'Opportunity'}</span>
+            <span class="block text-xs font-bold text-navy mt-1">${p.card.title}</span>
+            <span class="block text-[10px] text-slate-500">Picked by ${p.playerName}</span>
+          </div>
+        `).join('');
+        document.getElementById('solo-selected-summary').classList.remove('hidden');
+
+        const useCases = GAME_DATA[this.solo.edition].use_cases;
+        const currentCase = useCases[this.solo.roundIndex % useCases.length];
+        document.getElementById('solo-usecase-chip-title').textContent = currentCase.title;
+        document.getElementById('solo-decision-board').classList.remove('hidden');
+
+        this.setStandaloneInstruction('Decide where you want to put this use case: drag it to a column!');
+      }
+
+      soloDragStart(e) {
+        e.dataTransfer.setData('text/plain', 'usecase');
+        e.dataTransfer.effectAllowed = 'move';
+      }
+
+      soloDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over-zone');
+      }
+
+      soloDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over-zone');
+      }
+
+      soloDrop(e, column) {
+        if (e) {
+          e.preventDefault();
+          e.currentTarget.classList.remove('drag-over-zone');
+        }
+        if (this.solo.phase !== 'decision') return;
+        this.handleStandaloneDecision(column);
+      }
+
+      handleStandaloneDecision(column) {
+        if (column === 'guard') {
+          const useCases = GAME_DATA[this.solo.edition].use_cases;
+          const currentCase = useCases[this.solo.roundIndex % useCases.length];
+          document.getElementById('solo-guardrail-usecase').textContent = currentCase.title;
+          document.getElementById('solo-guardrail-input').value = '';
+          document.getElementById('modal-solo-guardrail').classList.remove('hidden');
+          return;
+        }
+        this.finalizeStandaloneDecision(column, '');
+      }
+
+      submitStandaloneGuardrail() {
+        const text = document.getElementById('solo-guardrail-input').value.trim();
+        if (!text) {
+          this.showToast("Please describe the guardrails discussed by the class.", "info");
+          return;
+        }
+        document.getElementById('modal-solo-guardrail').classList.add('hidden');
+        this.finalizeStandaloneDecision('guard', text);
+      }
+
+      finalizeStandaloneDecision(column, guardrailText) {
+        const useCases = GAME_DATA[this.solo.edition].use_cases;
+        const currentCase = useCases[this.solo.roundIndex % useCases.length];
+        const decisionLabel = column === 'yes' ? 'TO AI' : column === 'no' ? 'NOT TO AI' : 'TO AI — WITH GUARDRAILS';
+
+        const entry = {
+          round: this.solo.roundIndex + 1,
+          useCaseTitle: currentCase.title,
+          category: currentCase.cat,
+          decision: decisionLabel,
+          guardrailText: guardrailText || '',
+          topRisks: (this.solo.pendingPicks || []).filter(p => p.type === 'risk').map(p => p.card.title),
+          topOpportunities: (this.solo.pendingPicks || []).filter(p => p.type === 'opportunity').map(p => p.card.title)
+        };
+
+        this.solo.notesLog.push(entry);
+        this.solo.decisionBoard[column].push({ round: entry.round, title: entry.useCaseTitle });
+        this.solo.phase = 'decided';
+
+        this.renderStandaloneTracker();
+        this.renderStandaloneNotesExport();
+        this.showStandalonePostDecisionPopup(entry);
+      }
+
+      renderStandaloneTracker() {
+        const board = this.solo.decisionBoard;
+        const renderCol = (items) => (items && items.length)
+          ? items.map(item => `<div class="px-2.5 py-1.5 bg-white/70 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700">#${item.round} — ${item.title}</div>`).join('')
+          : `<p class="text-[11px] text-slate-400 italic">No cases yet.</p>`;
+
+        document.getElementById('solo-tracker-col-yes').innerHTML = renderCol(board.yes);
+        document.getElementById('solo-tracker-col-no').innerHTML = renderCol(board.no);
+        document.getElementById('solo-tracker-col-guard').innerHTML = renderCol(board.guard);
+      }
+
+      showStandalonePostDecisionPopup(entry) {
+        const useCases = GAME_DATA[this.solo.edition].use_cases;
+        const isLastRound = (this.solo.roundIndex + 1) >= useCases.length;
+
+        const summaryEl = document.getElementById('solo-postdecision-summary');
+        summaryEl.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-navy">Round #${entry.round}: ${entry.useCaseTitle}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${entry.decision.includes('NOT') ? 'bg-risk text-white' : entry.decision.includes('GUARDRAILS') ? 'bg-gold-amber text-white' : 'bg-opp text-white'}">${entry.decision}</span>
+          </div>
+          ${entry.guardrailText ? `<p class="italic text-slate-700">"Guardrail: ${entry.guardrailText}"</p>` : ''}
+          ${entry.topRisks.length ? `<p><strong>Top Risks:</strong> ${entry.topRisks.join(', ')}</p>` : ''}
+          ${entry.topOpportunities.length ? `<p><strong>Top Opportunities:</strong> ${entry.topOpportunities.join(', ')}</p>` : ''}
+        `;
+
+        document.getElementById('solo-postdecision-next-label').textContent = isLastRound ? 'Finish Session' : 'Next Case';
+        document.getElementById('modal-solo-postdecision').classList.remove('hidden');
+      }
+
+      standaloneNextCase() {
+        document.getElementById('modal-solo-postdecision').classList.add('hidden');
+        const useCases = GAME_DATA[this.solo.edition].use_cases;
+        this.solo.roundIndex += 1;
+
+        if (this.solo.roundIndex >= useCases.length) {
+          this.showToast("Session complete! All use cases have been decided.", "success");
+          this.setStandaloneInstruction("Session complete — great work! Export your notes sheet any time.");
+          document.getElementById('solo-deal-zone').innerHTML = '';
+          document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
+          document.getElementById('solo-selected-summary').classList.add('hidden');
+          document.getElementById('solo-decision-board').classList.add('hidden');
+          return;
+        }
+
+        this.startStandaloneRound();
+      }
+
+      renderStandaloneNotesExport() {
+        document.getElementById('solo-export-subtitle').textContent =
+          `Edition: ${this.solo.edition} · Players: ${this.solo.players.map(p => p.name).join(', ')} · Generated ${new Date().toLocaleString()}`;
+
+        const rows = document.getElementById('solo-export-rows');
+        rows.innerHTML = this.solo.notesLog.map(item => `
+          <div style="border:1px solid #e2e8f0; border-radius:12px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <strong style="color:#1f3a5f;">Round #${item.round}: ${item.useCaseTitle} (${item.category})</strong>
+              <span style="font-size:11px; font-weight:bold; padding:2px 8px; border-radius:9999px; color:#fff; background:${item.decision.includes('NOT') ? '#8f2d2d' : item.decision.includes('GUARDRAILS') ? '#b45309' : '#1f6d3d'};">${item.decision}</span>
+            </div>
+            ${item.topRisks.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Risks:</strong> ${item.topRisks.join(', ')}</div>` : ''}
+            ${item.topOpportunities.length ? `<div style="font-size:12px; color:#334155;"><strong>Top Opportunities:</strong> ${item.topOpportunities.join(', ')}</div>` : ''}
+            ${item.guardrailText ? `<div style="font-size:12px; color:#334155; font-style:italic;">Guardrail: ${item.guardrailText}</div>` : ''}
+          </div>
+        `).join('') || `<p style="color:#94a3b8; font-size:12px;">No decisions logged yet.</p>`;
+      }
+
+      async exportStandaloneNotes(type) {
+        if (typeof html2canvas === 'undefined') {
+          this.showToast("Export library failed to load.", "error");
+          return;
+        }
+        const el = document.getElementById('standalone-notes-export');
+        try {
+          const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff' });
+          if (type === 'image') {
+            const link = document.createElement('a');
+            link.download = `To_AI_Notes_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            this.showToast("Notes sheet saved as image!", "success");
+          } else {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const imgData = canvas.toDataURL('image/png');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (canvas.height * pageWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
+            pdf.save(`To_AI_Notes_${Date.now()}.pdf`);
+            this.showToast("Notes sheet saved as PDF!", "success");
+          }
+        } catch(err) {
+          console.error(err);
+          this.showToast("Export failed: " + err.message, "error");
+        }
       }
 
       showFirebaseModal() { document.getElementById('modal-firebase').classList.remove('hidden'); }
