@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To AI or Not to AI? — Digital Edition</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              DEFAULT: '#1f3a5f',
+              dark: '#142742',
+              light: '#2c5282',
+            },
+            gold: {
+              DEFAULT: '#8a6d1f',
+              light: '#d69e2e',
+              amber: '#b45309',
+            },
+            risk: {
+              DEFAULT: '#8f2d2d',
+              light: '#fee2e2',
+              dark: '#991b1b',
+            },
+            opp: {
+              DEFAULT: '#1f6d3d',
+              light: '#dcfce7',
+              dark: '#166534',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .card-shadow {
+      box-shadow: 0 4px 20px -2px rgba(31, 58, 95, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    }
+    .card-shadow-lg {
+      box-shadow: 0 10px 25px -5px rgba(31, 58, 95, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+
+  <!-- Firebase v11 Module Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, collection, deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    window.FirebaseSDK = {
+      initializeApp, getAuth, signInAnonymously, getFirestore,
+      doc, setDoc, getDoc, updateDoc, onSnapshot, collection, deleteDoc
+    };
+  </script>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+
+  <header class="bg-navy border-b border-slate-700 text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="app.goHome()">
+        <div class="w-10 h-10 rounded-lg bg-gold-amber flex items-center justify-center text-white font-bold text-xl shadow-inner">
+          <i class="fa-solid fa-scale-balanced"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight leading-tight">To AI or Not to AI?</h1>
+          <p class="text-xs text-slate-300 font-medium">Digital Case-Method Game</p>
+        </div>
+      </div>
+
+      <!-- Header Status Badges -->
+      <div id="header-status" class="hidden md:flex items-center space-x-3 text-xs">
+        <span id="badge-mode" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
+          Mode: <strong class="text-white">Whole Class</strong>
+        </span>
+        <span id="badge-edition" class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium border border-slate-700">
+          Edition: <strong class="text-white">Leadership</strong>
+        </span>
+        <span id="badge-room" class="px-2.5 py-1 rounded-full bg-gold-amber text-white font-bold tracking-wider">
+          ROOM: <span id="header-room-code">----</span>
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2">
+        <button id="btn-cloud-config" onclick="app.showFirebaseModal()" class="px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1">
+          <i class="fa-solid fa-cloud text-gold-light"></i>
+          <span id="cloud-status-text">Cloud Sync Config</span>
+        </button>
+        <button onclick="app.showHelpModal()" class="p-2 rounded-md hover:bg-slate-800 text-slate-300 hover:text-white transition" title="Instructions & Setup Guide">
+          <i class="fa-solid fa-circle-question text-lg"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <section id="view-landing" class="max-w-3xl mx-auto py-8">
+      <div class="text-center mb-10">
+        <div class="inline-flex items-center justify-center p-3 bg-navy/10 text-navy rounded-full mb-4">
+          <i class="fa-solid fa-diagram-project text-3xl"></i>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-navy tracking-tight mb-3">
+          Ethical AI Decision-Making Card Game
+        </h2>
+        <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+          Evaluate real-world AI use cases, weigh specific risks and potentials, debate with peers, and commit to responsible governance decisions.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Host Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 card-shadow hover:border-navy/40 transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-xl mb-4 shadow">
+              <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <h3 class="text-xl font-bold text-navy mb-2">Host a Session</h3>
+            <p class="text-sm text-slate-600 mb-6">
+              For Teachers, Instructors, & Facilitators. Set up a new room, select an edition (Leadership, Teacher, Student), choose play mode, and guide the class.
+            </p>
+          </div>
+          <button onclick="app.showHostSetup()" class="w-full py-3 px-4 bg-navy hover:bg-navy-dark text-white font-semibold rounded-xl transition shadow flex items-center justify-center space-x-2">
+            <span>Create New Session</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+
+        <!-- Join Card -->
+        <div class="bg-white rounded-2xl p-6 border border-slate-200 card-shadow hover:border-gold-amber/40 transition flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-gold-amber text-white flex items-center justify-center text-xl mb-4 shadow">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h3 class="text-xl font-bold text-navy mb-2">Join a Session</h3>
+            <p class="text-sm text-slate-600 mb-6">
+              For Students & Participants. Enter the 5-character Room Code provided by your instructor to join on your device.
+            </p>
+          </div>
+          <form onsubmit="app.joinSession(event)" class="space-y-3">
+            <div>
+              <input type="text" id="join-room-code" placeholder="Enter Room Code (e.g. ALPHA)" uppercase maxlength="6" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 font-mono text-center tracking-widest text-lg font-bold uppercase focus:ring-2 focus:ring-navy focus:border-navy outline-none">
+            </div>
+            <div>
+              <input type="text" id="join-player-name" placeholder="Your Display Name" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy focus:border-navy outline-none">
+            </div>
+            <button type="submit" class="w-full py-3 px-4 bg-gold-amber hover:bg-yellow-700 text-white font-semibold rounded-xl transition shadow flex items-center justify-center space-x-2">
+              <span>Join Room</span>
+              <i class="fa-solid fa-right-to-bracket text-xs"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Local Quick Test / Demo Bar -->
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-900 text-sm">
+        <div class="flex items-center space-x-3">
+          <i class="fa-solid fa-bolt text-xl text-gold-amber"></i>
+          <div>
+            <span class="font-bold">Instant Demo / Sandbox Mode:</span>
+            <span class="text-amber-800 block sm:inline">Play immediately in local memory with simulated participants!</span>
+          </div>
+        </div>
+        <button onclick="app.startLocalDemo()" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs whitespace-nowrap transition shadow">
+          Launch Quick Demo
+        </button>
+      </div>
+    </section>
+
+    <section id="view-host-setup" class="hidden max-w-2xl mx-auto py-6">
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+          <h2 class="text-2xl font-bold text-navy flex items-center space-x-2">
+            <i class="fa-solid fa-sliders text-gold-amber"></i>
+            <span>Session Configuration</span>
+          </h2>
+          <button onclick="app.goHome()" class="text-xs text-slate-500 hover:text-slate-800 font-medium">Cancel</button>
+        </div>
+
+        <form onsubmit="app.createSession(event)" class="space-y-6">
+          <!-- Host Name -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Host Name</label>
+            <input type="text" id="setup-host-name" value="Prof. Smith" required class="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy focus:border-navy outline-none">
+          </div>
+
+          <!-- Edition Picker -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Game Edition (Target Audience)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="edition" value="leadership" checked class="sr-only">
+                <i class="fa-solid fa-building-user text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Leadership</span>
+                <span class="text-[10px] text-slate-500">Deans, Directors & Execs</span>
+              </label>
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="edition" value="teacher" class="sr-only">
+                <i class="fa-solid fa-chalkboard-teacher text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Teacher</span>
+                <span class="text-[10px] text-slate-500">Instructors & Faculty</span>
+              </label>
+              <label class="relative border-2 border-slate-200 rounded-xl p-3 cursor-pointer hover:border-navy transition flex flex-col justify-between space-y-1 text-center bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <input type="radio" name="edition" value="student" class="sr-only">
+                <i class="fa-solid fa-user-graduate text-2xl text-navy mb-1"></i>
+                <span class="text-xs font-bold text-navy block">Student</span>
+                <span class="text-[10px] text-slate-500">K-12 & Higher Ed Students</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Play Mode Picker -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Play Mode & Dynamics</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label class="border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-navy transition bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <div class="flex items-start space-x-3">
+                  <input type="radio" name="playMode" value="whole_class" checked class="mt-1">
+                  <div>
+                    <span class="text-sm font-bold text-navy block mb-1">Mode A — Whole Class</span>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Entire group plays a single shared Use Case deck together. Live class-wide card flagging heatmap and voting tallies.
+                    </p>
+                  </div>
+                </div>
+              </label>
+
+              <label class="border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-navy transition bg-slate-50 [&:has(input:checked)]:border-navy [&:has(input:checked)]:bg-navy/5">
+                <div class="flex items-start space-x-3">
+                  <input type="radio" name="playMode" value="small_groups" class="mt-1" onchange="app.toggleSmallGroupOptions()">
+                  <div>
+                    <span class="text-sm font-bold text-navy block mb-1">Mode B — Small Groups</span>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Students split into small groups (5-6 members) playing independent rounds. Host oversees cross-group comparison matrix.
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Small Group Specific Settings -->
+          <div id="small-group-options" class="hidden space-y-4 p-4 bg-slate-100 rounded-xl border border-slate-200">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600">Small Group Configuration</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Group Driver Control</label>
+                <select id="setup-driver-setting" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-navy outline-none">
+                  <option value="driver">One Driver (Group Leader advances rounds)</option>
+                  <option value="free">Free-for-All (Anyone can advance round)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Group Formation Strategy</label>
+                <select id="setup-group-formation" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-navy outline-none">
+                  <option value="auto">Auto-split joined players into groups of 5-6</option>
+                  <option value="codes">Pre-generate Group Codes (Group 1, Group 2...)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advisory Timer setting -->
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Advisory Round Timer (Minutes)</label>
+            <input type="number" id="setup-timer" value="7" min="1" max="30" class="w-24 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-navy outline-none">
+            <p class="text-[11px] text-slate-500 mt-1">Timer is purely advisory for discussion pacing and does NOT auto-advance rounds.</p>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 px-4 bg-navy hover:bg-navy-dark text-white font-bold rounded-xl transition shadow text-sm flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-play text-gold-amber"></i>
+            <span>Initialize & Open Lobby</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <section id="view-lobby" class="hidden max-w-4xl mx-auto py-6">
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 sm:p-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-6 gap-4">
+          <div>
+            <span class="text-xs font-bold text-gold-amber uppercase tracking-widest block mb-1">Session Lobby</span>
+            <h2 class="text-2xl font-black text-navy flex items-center space-x-3">
+              <span>Room Code:</span>
+              <span id="lobby-room-code" class="font-mono bg-navy text-gold-light px-3 py-1 rounded-lg text-3xl">-----</span>
+            </h2>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="app.copyRoomCode()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-300 transition flex items-center space-x-2">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy Code</span>
+            </button>
+            <button id="btn-start-session" onclick="app.startSessionFromLobby()" class="px-6 py-2.5 bg-gold-amber hover:bg-yellow-700 text-white text-sm font-bold rounded-xl transition shadow flex items-center space-x-2">
+              <i class="fa-solid fa-circle-play"></i>
+              <span>Start Game Round 1</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="md:col-span-2">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-navy uppercase tracking-wider">
+                Joined Participants (<span id="lobby-player-count">0</span>)
+              </h3>
+              <button id="btn-add-simulated" onclick="app.addSimulatedPlayer()" class="text-xs text-navy hover:underline font-semibold flex items-center space-x-1">
+                <i class="fa-solid fa-user-plus text-[10px]"></i>
+                <span>Add Simulated Player</span>
+              </button>
+            </div>
+            
+            <!-- Player Grid -->
+            <div id="lobby-player-list" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-1 custom-scrollbar">
+              <div class="p-3 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-center text-xs text-slate-400 italic col-span-full">
+                Waiting for students to enter room code...
+              </div>
+            </div>
+          </div>
+
+          <!-- Lobby Information Panel -->
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-xs space-y-3">
+            <h4 class="font-bold text-navy border-b border-slate-200 pb-2">Session Details</h4>
+            <div class="flex justify-between text-slate-600">
+              <span>Edition:</span>
+              <strong id="lobby-edition-label" class="text-slate-800 capitalize">-</strong>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Play Mode:</span>
+              <strong id="lobby-mode-label" class="text-slate-800 capitalize">-</strong>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Card Distribution:</span>
+              <span class="text-slate-800 font-medium">Round-Robin Deal</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Data Policy:</span>
+              <span class="text-slate-800 font-medium">Auto-Expire 14 Days</span>
+            </div>
+            <div id="lobby-group-hint" class="hidden pt-2 border-t border-slate-200 text-[11px] text-slate-500">
+              Small Groups mode enabled. Players will be auto-assigned to groups when game starts.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-round-class" class="hidden space-y-6">
+      
+      <!-- Round Header Bar -->
+      <div class="bg-navy rounded-2xl p-4 sm:p-6 text-white card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center space-x-2 text-xs text-gold-light font-bold uppercase tracking-wider mb-1">
+            <span>Round <span id="round-num">1</span> of 18</span>
+            <span>•</span>
+            <span id="round-usecase-cat" class="bg-white/10 px-2 py-0.5 rounded text-[11px] text-white">Category</span>
+          </div>
+          <h2 id="round-usecase-title" class="text-xl sm:text-2xl font-black text-white leading-snug">
+            Loading Use Case Scenario...
+          </h2>
+        </div>
+
+        <div class="flex items-center justify-between md:justify-end space-x-4 border-t md:border-t-0 border-white/10 pt-3 md:pt-0">
+          <div class="text-center">
+            <span class="text-[10px] uppercase tracking-widest text-slate-300 block">Timer</span>
+            <div id="round-timer-display" class="font-mono font-bold text-lg text-gold-light">07:00</div>
+          </div>
+          
+          <!-- Host Controls in Header -->
+          <div id="host-round-controls" class="hidden flex items-center space-x-2">
+            <button onclick="app.hostOpenVoting()" class="px-3 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-lg transition shadow">
+              <i class="fa-solid fa-check-to-slot mr-1"></i> Open Vote
+            </button>
+            <button onclick="app.hostNextRound()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition shadow">
+              Next Case <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Use Case Description Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Scenario Summary</h3>
+        <p id="round-usecase-body" class="text-base sm:text-lg text-slate-800 leading-relaxed font-medium">
+          Loading scenario text...
+        </p>
+      </div>
+
+      <!-- Main Play Layout Grid: Left Hand/Flags, Right Live Heatmap & Voting -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Student Hand Panel (5 Cols) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-navy uppercase tracking-wider flex items-center space-x-2">
+              <i class="fa-solid fa-hand text-gold-amber"></i>
+              <span>Your Dealt Cards (<span id="hand-card-count">0</span>)</span>
+            </h3>
+            <span class="text-[11px] text-slate-500">Tap card to flag for class debate</span>
+          </div>
+
+          <!-- Hand Cards Scroll -->
+          <div id="player-hand-container" class="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+            <!-- Cards dynamically rendered -->
+            <div class="p-4 bg-white rounded-xl border border-slate-200 text-xs text-slate-400 text-center">
+              No cards dealt to your device yet.
+            </div>
+          </div>
+        </div>
+
+        <!-- Shared Live Flagged Heatmap & Voting (7 Cols) -->
+        <div class="lg:col-span-7 space-y-6">
+
+          <!-- Shared Flagged Cards Heatmap -->
+          <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-navy uppercase tracking-wider flex items-center space-x-2">
+                  <i class="fa-solid fa-fire-flame-curved text-orange-500"></i>
+                  <span>Class Flagged Cards Tally</span>
+                </h3>
+                <p class="text-[11px] text-slate-500">Live updating summary of cards flagged by all students</p>
+              </div>
+              <span id="flagged-total-badge" class="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                0 Flags Total
+              </span>
+            </div>
+
+            <!-- Flagged Cards Live List -->
+            <div id="class-flagged-list" class="space-y-2.5 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
+              <div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                No cards flagged yet this round. Students scan their hands and tap to flag relevant risks/potentials.
+              </div>
+            </div>
+
+            <!-- Host Selection / Promotion Actions -->
+            <div id="host-promotion-panel" class="hidden pt-3 border-t border-slate-100">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-navy">Host Final Selection (Target: 2-3 Risks, 2-3 Potentials):</span>
+                <button onclick="app.hostConfirmPromotedCards()" class="px-3 py-1.5 bg-navy text-white text-xs font-bold rounded-lg hover:bg-navy-dark transition">
+                  Confirm Selected Cards
+                </button>
+              </div>
+              <div id="selected-cards-badges" class="flex flex-wrap gap-1.5 mt-2 min-h-8">
+                <!-- Badges -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Class-Wide Decision Vote Area -->
+          <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="text-sm font-bold text-navy uppercase tracking-wider flex items-center space-x-2">
+                <i class="fa-solid fa-gavel text-navy"></i>
+                <span>Class Decision Board</span>
+              </h3>
+              <span id="voting-status-badge" class="px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                Discussion Phase
+              </span>
+            </div>
+
+            <!-- 3 Decision Voting Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- TO AI -->
+              <button onclick="app.castVote('TO AI')" id="btn-vote-yes" disabled class="p-4 rounded-xl border-2 border-opp/30 bg-opp-light/30 hover:bg-opp-light text-opp-dark transition text-left flex flex-col justify-between space-y-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-black uppercase tracking-wider">TO AI</span>
+                  <i class="fa-solid fa-circle-check text-opp"></i>
+                </div>
+                <p class="text-[11px] text-slate-700 leading-tight">Use AI for this, largely as-is.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden">
+                  <div id="bar-vote-yes" class="bg-opp h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span id="count-vote-yes" class="text-[10px] font-bold text-slate-600 block text-right">0 votes</span>
+              </button>
+
+              <!-- NOT TO AI -->
+              <button onclick="app.castVote('NOT TO AI')" id="btn-vote-no" disabled class="p-4 rounded-xl border-2 border-risk/30 bg-risk-light/30 hover:bg-risk-light text-risk-dark transition text-left flex flex-col justify-between space-y-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-black uppercase tracking-wider">NOT TO AI</span>
+                  <i class="fa-solid fa-circle-xmark text-risk"></i>
+                </div>
+                <p class="text-[11px] text-slate-700 leading-tight">Keep fully human. Do not use AI.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden">
+                  <div id="bar-vote-no" class="bg-risk h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span id="count-vote-no" class="text-[10px] font-bold text-slate-600 block text-right">0 votes</span>
+              </button>
+
+              <!-- TO AI WITH GUARDRAILS -->
+              <button onclick="app.castVote('TO AI — WITH GUARDRAILS')" id="btn-vote-guard" disabled class="p-4 rounded-xl border-2 border-gold-amber/30 bg-amber-50 hover:bg-amber-100 text-amber-900 transition text-left flex flex-col justify-between space-y-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-black uppercase tracking-wider">WITH GUARDRAILS</span>
+                  <i class="fa-solid fa-shield-halved text-gold-amber"></i>
+                </div>
+                <p class="text-[11px] text-slate-700 leading-tight">Use AI, but only with specific safeguards.</p>
+                <div class="w-full bg-slate-200 rounded-full h-2 mt-2 overflow-hidden">
+                  <div id="bar-vote-guard" class="bg-gold-amber h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span id="count-vote-guard" class="text-[10px] font-bold text-slate-600 block text-right">0 votes</span>
+              </button>
+            </div>
+
+            <!-- Guardrail Input Box (Host / Designated Student) -->
+            <div id="guardrail-input-container" class="hidden space-y-2 pt-2 border-t border-slate-100">
+              <label class="block text-xs font-bold text-amber-900">
+                <i class="fa-solid fa-pencil mr-1"></i> Specify Concrete Guardrail Text:
+              </label>
+              <textarea id="guardrail-text-input" rows="2" placeholder="e.g., Mandatory human review and sign-off required before any automated decision affects a student's standing." class="w-full p-2.5 text-xs rounded-lg border border-amber-300 bg-amber-50 focus:ring-2 focus:ring-gold-amber outline-none"></textarea>
+            </div>
+
+            <!-- Host Final Lock Decision Button -->
+            <div id="host-lock-panel" class="hidden flex justify-end pt-2">
+              <button onclick="app.hostCommitDecision()" class="px-5 py-2.5 bg-navy hover:bg-navy-dark text-white text-xs font-bold rounded-xl transition shadow flex items-center space-x-2">
+                <i class="fa-solid fa-lock text-gold-light"></i>
+                <span>Lock Decision & Save to Notes Log</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-small-groups" class="hidden space-y-6">
+      
+      <!-- Host Group Overview Dashboard -->
+      <div id="host-groups-dashboard" class="space-y-6">
+        <div class="bg-navy rounded-2xl p-6 text-white card-shadow flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold text-gold-light uppercase tracking-wider">Mode B Host Live Control</span>
+            <h2 class="text-2xl font-black text-white">Small Groups Live Monitor</h2>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="app.showDebriefScreen()" class="px-4 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-xl transition shadow flex items-center space-x-2">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Open Class Debrief & Split Matrix</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Groups Cards Grid -->
+        <div id="groups-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Dynamically populated with Group cards -->
+        </div>
+      </div>
+
+      <!-- Individual Group Player/Driver Workspace -->
+      <div id="group-player-workspace" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 card-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <span id="group-workspace-badge" class="px-3 py-1 bg-navy text-white text-xs font-bold rounded-full inline-block mb-1">
+              Group 1 — Delta
+            </span>
+            <h2 id="group-usecase-title" class="text-xl font-bold text-navy">Loading Use Case...</h2>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span id="driver-status-badge" class="text-xs px-2.5 py-1 rounded-md bg-slate-100 font-semibold text-slate-600 border border-slate-200">
+              Role: Member
+            </span>
+            <button id="group-driver-next-btn" onclick="app.groupDriverAdvance()" class="hidden px-4 py-2 bg-navy text-white text-xs font-bold rounded-lg hover:bg-navy-dark transition">
+              Group Lock & Next Case
+            </button>
+          </div>
+        </div>
+
+        <!-- Group Hand & Decision Area (Reuses round sub-components) -->
+        <div id="group-round-subcontent" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </section>
+
+    <section id="view-debrief" class="hidden space-y-8 max-w-5xl mx-auto py-4">
+      
+      <!-- Debrief Header -->
+      <div class="bg-navy rounded-2xl p-6 sm:p-8 text-white card-shadow flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-gold-light uppercase tracking-widest block mb-1">Session Summary & Analysis</span>
+          <h2 class="text-2xl sm:text-3xl font-black text-white">Class Debrief & Notes Log</h2>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="app.exportNotesCSV()" class="px-4 py-2 bg-gold-amber hover:bg-yellow-600 text-white text-xs font-bold rounded-xl transition shadow flex items-center space-x-2">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Export CSV</span>
+          </button>
+          <button onclick="app.copyNotesText()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-xl transition shadow flex items-center space-x-2">
+            <i class="fa-regular fa-copy"></i>
+            <span>Copy Log</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Decision Tally Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-opp-light/40 border border-opp/30 p-5 rounded-2xl text-center">
+          <span class="text-xs font-bold text-opp uppercase tracking-wider block mb-1">TO AI</span>
+          <span id="debrief-count-yes" class="text-4xl font-black text-opp-dark">0</span>
+          <span class="text-[11px] text-slate-500 block mt-1">Cases approved largely as-is</span>
+        </div>
+        <div class="bg-risk-light/40 border border-risk/30 p-5 rounded-2xl text-center">
+          <span class="text-xs font-bold text-risk uppercase tracking-wider block mb-1">NOT TO AI</span>
+          <span id="debrief-count-no" class="text-4xl font-black text-risk-dark">0</span>
+          <span class="text-[11px] text-slate-500 block mt-1">Cases kept fully human</span>
+        </div>
+        <div class="bg-amber-50 border border-gold-amber/30 p-5 rounded-2xl text-center">
+          <span class="text-xs font-bold text-gold-amber uppercase tracking-wider block mb-1">WITH GUARDRAILS</span>
+          <span id="debrief-count-guard" class="text-4xl font-black text-amber-900">0</span>
+          <span class="text-[11px] text-slate-500 block mt-1">Cases requiring specific safeguards</span>
+        </div>
+      </div>
+
+      <!-- Mode B Cross-Group Compare Table (Only shown in Small Groups mode) -->
+      <div id="cross-group-matrix-panel" class="hidden bg-white rounded-2xl border border-slate-200 card-shadow p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-base font-bold text-navy flex items-center space-x-2">
+              <i class="fa-solid fa-code-compare text-gold-amber"></i>
+              <span>Cross-Group Decision Matrix</span>
+            </h3>
+            <p class="text-xs text-slate-500">Rows highlighted in red indicate split decisions where groups disagreed on the same Use Case!</p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table id="cross-group-table" class="w-full text-xs text-left">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
+              <tr>
+                <th class="p-3">Use Case</th>
+                <th class="p-3">Group 1</th>
+                <th class="p-3">Group 2</th>
+                <th class="p-3">Group 3</th>
+                <th class="p-3">Consensus Status</th>
+              </tr>
+            </thead>
+            <tbody id="cross-group-table-body" class="divide-y divide-slate-100 font-medium">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Complete Log Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 space-y-4">
+        <h3 class="text-base font-bold text-navy border-b border-slate-100 pb-3">Session Notes Log</h3>
+        
+        <div id="notes-log-container" class="space-y-4">
+          <div class="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-xl">
+            No rounds completed yet. Decisions and guardrails logged during game rounds will appear here.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Firebase Modal -->
+  <div id="modal-firebase" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-5 card-shadow-lg border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-cloud text-gold-amber"></i>
+          <span>Firebase / Cloud Sync Setup</span>
+        </h3>
+        <button onclick="app.hideFirebaseModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Paste your free-tier Firebase JS SDK configuration JSON snippet below to enable live multi-device network synchronization across laptops, phones, and tablets.
+      </p>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Firebase Configuration JSON</label>
+        <textarea id="firebase-config-input" rows="7" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app-id",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456",
+  "appId": "1:123456:web:abc"
+}' class="w-full p-3 font-mono text-xs rounded-xl border border-slate-300 focus:ring-2 focus:ring-navy outline-none"></textarea>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 space-y-1.5">
+        <span class="font-bold text-navy block">Security & 14-Day TTL Policy Settings:</span>
+        <p>1. In Firebase Console &gt; Firestore Database &gt; Rules, set:</p>
+        <code class="block font-mono bg-slate-200 p-1 rounded text-[10px] text-slate-800">
+          rules_version = '2'; service cloud.firestore { match /databases/{db}/documents { match /{document=**} { allow read, write: if true; } } }
+        </code>
+        <p>2. Go to <strong>Data &gt; Time-to-live (TTL)</strong> and set field <code class="font-bold">expiresAt</code> to auto-delete expired sessions after 14 days.</p>
+      </div>
+
+      <div class="flex items-center justify-end space-x-3 pt-2">
+        <button onclick="app.clearFirebaseConfig()" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800">Use Local Mock Engine</button>
+        <button onclick="app.saveFirebaseConfig()" class="px-5 py-2 bg-navy text-white text-xs font-bold rounded-xl hover:bg-navy-dark transition">Save & Connect Cloud</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & Rules Modal -->
+  <div id="modal-help" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4 card-shadow-lg border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-book-open text-gold-amber"></i>
+          <span>Game Rules & Facilitation Guide</span>
+        </h3>
+        <button onclick="app.hideHelpModal()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-700 space-y-3 leading-relaxed">
+        <h4 class="font-bold text-navy text-sm">Game Objective & Flow</h4>
+        <p>
+          "To AI or Not to AI?" is a case-method card game designed to build shared vocabulary around the risks and opportunities of using AI in a given role.
+        </p>
+        <ol class="list-decimal pl-4 space-y-1">
+          <li><strong>Dealing:</strong> 26 Risk & Potential cards are distributed across players as their watch area.</li>
+          <li><strong>Scenario Reveal:</strong> Host reveals a Use Case scenario (1 of 18).</li>
+          <li><strong>Scanning & Flagging:</strong> Players inspect their dealt hand and flag relevant Risk/Potential cards.</li>
+          <li><strong>Debate & Consensus:</strong> Group selects 2-3 Risks and 2-3 Potentials that apply.</li>
+          <li><strong>Decision:</strong> Commit to <strong>TO AI</strong>, <strong>NOT TO AI</strong>, or <strong>TO AI — WITH GUARDRAILS</strong> (plus guardrail text).</li>
+        </ol>
+      </div>
+
+      <div class="pt-2 border-t border-slate-100 flex justify-end">
+        <button onclick="app.hideHelpModal()" class="px-5 py-2 bg-navy text-white text-xs font-bold rounded-xl">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Bar -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <script>
+    const GAME_DATA = {
+      "leadership": {
+        "use_cases": [
+          {"n": 1, "cat": "Admissions", "title": "Essay Screening", "body": "An AI tool flags applicants whose essays seem “AI-generated” and ranks essays by which ones deserve priority review by admissions staff."},
+          {"n": 2, "cat": "Communications", "title": "Crisis Statement", "body": "A serious incident just happened on campus. Your communications team wants AI to draft the first public statement within the hour."},
+          {"n": 3, "cat": "Academic Affairs", "title": "Tenure Dossier Review", "body": "AI is used to summarize faculty tenure case files and draft a recommendation memo for the promotions committee."},
+          {"n": 4, "cat": "Student Life", "title": "Dropout Risk Prediction", "body": "An AI model scans grades, attendance, and LMS activity to flag students likely to withdraw, so advisors can intervene early."},
+          {"n": 5, "cat": "Admissions", "title": "Prospective Student Chatbot", "body": "An AI chatbot answers questions from prospective students and parents on the admissions website, 24 hours a day."},
+          {"n": 6, "cat": "Research", "title": "Grant Proposal Drafting", "body": "The research office uses AI to draft major sections of a large external grant proposal ahead of a tight funder deadline."},
+          {"n": 7, "cat": "Governance", "title": "Board Briefing Notes", "body": "AI transcribes board meetings and drafts summary briefing notes and action items for trustees."},
+          {"n": 8, "cat": "Advancement", "title": "Personalized Donor Appeals", "body": "AI analyzes giving history to draft individually personalized fundraising appeal letters for a capital campaign."},
+          {"n": 9, "cat": "Academic Affairs", "title": "Curriculum Redesign", "body": "The academic council uses AI to help redesign the general education curriculum to meet new accreditation standards."},
+          {"n": 10, "cat": "Student Life", "title": "Academic Integrity Detection", "body": "AI flags student papers suspected of being AI-generated or plagiarized — flags that can trigger disciplinary action."},
+          {"n": 11, "cat": "Human Resources", "title": "Faculty Hiring Screening", "body": "AI screens hundreds of faculty applications and ranks candidates before the search committee ever sees them."},
+          {"n": 12, "cat": "Communications", "title": "Commencement Speech", "body": "The president asks AI to draft the commencement address and other major public speeches."},
+          {"n": 13, "cat": "Finance", "title": "Budget Forecasting", "body": "The finance office uses AI to model multi-year budget scenarios and recommend where to cut or invest."},
+          {"n": 14, "cat": "Student Life", "title": "Mental Health Triage Bot", "body": "An AI chatbot is offered as the first point of contact for students in distress, before they are referred to a human counselor."},
+          {"n": 15, "cat": "Governance", "title": "Contract & Policy Review", "body": "General counsel uses AI to review vendor contracts and flag risky clauses before signing."},
+          {"n": 16, "cat": "International Admissions", "title": "International Recruitment & Admissions", "body": "AI screens and ranks prospective international applicants — factoring in academic records, essays, and English proficiency scores — to prioritize outreach and offers."},
+          {"n": 17, "cat": "International Admissions", "title": "Visa & Compliance Document Review", "body": "AI reviews international students' visa and immigration paperwork for errors before it's submitted to government agencies, flagging anything that could delay or jeopardize their status."},
+          {"n": 18, "cat": "Governance", "title": "Accreditation Self-Study", "body": "Facing a tight deadline, the accreditation team asks AI to draft large portions of the official self-study report."}
+        ],
+        "risks": [
+          {"n": 1, "title": "Bias & Discrimination", "body": "Training data reflects historical inequities, disadvantaging people by race, gender, income, or disability."},
+          {"n": 2, "title": "Hallucination", "body": "The AI confidently generates false or fabricated information and presents it as fact."},
+          {"n": 3, "title": "Sycophancy", "body": "The AI tells you what you want to hear rather than what's accurate, reinforcing existing biases or bad decisions."},
+          {"n": 4, "title": "Privacy & Data Exposure", "body": "Sensitive data — student records, donor info, health data — may be leaked, misused, or exposed to third parties."},
+          {"n": 5, "title": "Accountability Gap", "body": "When AI contributes to a decision, it becomes unclear who is responsible if it goes wrong."},
+          {"n": 6, "title": "The Black Box", "body": "The AI's reasoning isn't explainable, making it hard to justify decisions to the people affected by them."},
+          {"n": 7, "title": "Over-Reliance & De-skilling", "body": "Heavy reliance on AI erodes staff and faculty judgment, expertise, and critical thinking over time."},
+          {"n": 8, "title": "Loss of Human Trust", "body": "Students, donors, or faculty feel disrespected or unheard when AI replaces genuine personal engagement."},
+          {"n": 9, "title": "Security Vulnerability", "body": "AI systems can be hacked, manipulated, or “jailbroken” to produce harmful or unauthorized outputs."},
+          {"n": 10, "title": "Homogenization", "body": "Widespread AI use can flatten diversity of thought, voice, and ideas across the institution."},
+          {"n": 11, "title": "Legal & Regulatory Liability", "body": "AI use may violate data protection laws, labor laws, or institutional policy — exposing the institution to risk."},
+          {"n": 12, "title": "Reputational Damage", "body": "A visible AI failure — a biased decision, an embarrassing error, a leak — can damage public trust fast."},
+          {"n": 13, "title": "Cognitive Surrender", "body": "People stop thinking it through and just defer to the AI's answer — judgment quietly atrophies as outputs go unquestioned, even on calls that deserve real scrutiny."},
+          {"n": 14, "title": "Environmental Impact", "body": "Training and running AI models consumes significant energy and water, and adds real strain to data centers — a cost that can sit uneasily next to an institution's own sustainability commitments."}
+        ],
+        "potentials": [
+          {"n": 1, "title": "Time & Efficiency", "body": "AI completes routine or high-volume tasks far faster than manual work, freeing up staff time."},
+          {"n": 2, "title": "Scale & Reach", "body": "AI can serve far more people at once than human staff alone — e.g. answering thousands of inquiries."},
+          {"n": 3, "title": "24/7 Availability", "body": "AI can provide support or information outside normal working hours, any day of the week."},
+          {"n": 4, "title": "Personalization", "body": "AI can tailor communication or recommendations to each individual's needs and history."},
+          {"n": 5, "title": "Consistency", "body": "AI applies the same criteria and process every time, reducing case-by-case variability."},
+          {"n": 6, "title": "Early Pattern Detection", "body": "AI can surface patterns in large datasets that humans would otherwise miss or catch too late."},
+          {"n": 7, "title": "Augmented Decision-Making", "body": "AI gives humans more or better information to make a final judgment call — without replacing them."},
+          {"n": 8, "title": "Cost Reduction", "body": "Automating routine tasks can meaningfully reduce operating costs over time."},
+          {"n": 9, "title": "Accessibility", "body": "Tools like translation, transcription, and text-to-speech can make information reachable to more people."},
+          {"n": 10, "title": "Frees Staff for Higher-Value Work", "body": "Removing repetitive tasks lets skilled staff focus on judgment, relationships, and strategy."},
+          {"n": 11, "title": "Faster Iteration", "body": "AI can quickly generate drafts or options, speeding up creative and planning processes."},
+          {"n": 12, "title": "Data-Driven Insight", "body": "AI can synthesize large, complex bodies of information into something usable and clear."}
+        ]
+      },
+      "teacher": {
+        "use_cases": [
+          {"n": 1, "cat": "Assessment", "title": "AI-Assisted Essay Grading", "body": "An AI tool reads student essays and suggests a grade and written feedback, which the teacher can accept, edit, or override."},
+          {"n": 2, "cat": "Planning", "title": "Lesson Plan Generation", "body": "A teacher asks AI to draft a full week of lesson plans aligned to the curriculum, to save prep time on a busy week."},
+          {"n": 3, "cat": "Instruction", "title": "AI Tutoring Chatbot", "body": "Students are given access to an AI chatbot that answers subject questions and walks them through problems outside class hours."},
+          {"n": 4, "cat": "Academic Integrity", "title": "AI-Content Detection", "body": "A teacher runs student submissions through an AI-detection tool, and a high score triggers an academic dishonesty conversation."},
+          {"n": 5, "cat": "Assessment", "title": "Automated Writing Feedback", "body": "AI gives students instant feedback on drafts — grammar, structure, clarity — before they submit the final version to the teacher."},
+          {"n": 6, "cat": "Assessment", "title": "AI-Generated Quiz Questions", "body": "A teacher asks AI to generate a bank of quiz and test questions covering the last two units, to save time writing assessments."},
+          {"n": 7, "cat": "Inclusion", "title": "Differentiated Materials", "body": "AI adapts a single lesson's reading level and format to fit students with different needs, including IEPs and English learners."},
+          {"n": 8, "cat": "Communication", "title": "Parent Email Drafting", "body": "A teacher uses AI to draft a sensitive email to a parent about their child's grades or behavior, then reviews it before sending."},
+          {"n": 9, "cat": "Classroom Management", "title": "Behavior & Engagement Monitoring", "body": "Classroom cameras feed an AI system that flags students who appear disengaged or disruptive, alerting the teacher in real time."},
+          {"n": 10, "cat": "Inclusion", "title": "Real-Time Translation", "body": "AI translates handouts and live instruction for English-language-learner students, so they can follow along in their first language."},
+          {"n": 11, "cat": "Advising", "title": "AI-Drafted Recommendation Letters", "body": "A teacher asks AI to draft a college recommendation letter for a student based on notes, grades, and a few bullet points."},
+          {"n": 12, "cat": "Assessment", "title": "AI Exam Proctoring", "body": "During remote or take-home exams, an AI system watches students through their webcam and flags anything that looks like cheating."},
+          {"n": 13, "cat": "Classroom Management", "title": "Automated Attendance & Participation", "body": "AI tracks who is present and how often each student speaks in class, feeding a participation score straight into the gradebook."},
+          {"n": 14, "cat": "Planning", "title": "Curriculum Standards Alignment", "body": "A department uses AI to check whether its course materials actually cover every required state or accreditation standard."},
+          {"n": 15, "cat": "Instruction", "title": "After-Hours Homework Help Bot", "body": "Students can message an AI chatbot at 10pm the night before an assignment is due, instead of waiting to ask the teacher the next day."},
+          {"n": 16, "cat": "Advising", "title": "At-Risk Student Flagging", "body": "AI scans grades, attendance, and login activity to flag students likely to fail or drop out, so a counselor can step in early."},
+          {"n": 17, "cat": "Assessment", "title": "AI-Built Grading Rubrics", "body": "A teacher asks AI to design a detailed grading rubric for a new project, rather than writing one from scratch."},
+          {"n": 18, "cat": "Professional Development", "title": "AI-Generated Training Materials", "body": "The school asks AI to draft the slide deck and handouts for an upcoming teacher professional-development session on a new policy."}
+        ],
+        "risks": [
+          {"n": 1, "title": "Bias & Discrimination", "body": "AI grading and detection tools can score some students unfairly — penalizing unfamiliar dialects, accents in speech-to-text, or writing styles the model wasn't trained on."},
+          {"n": 2, "title": "Hallucination", "body": "AI confidently generates facts, sources, or answer keys that are simply wrong — risky if it's used to grade or to generate 'correct' answers."},
+          {"n": 3, "title": "Sycophancy", "body": "AI tends to tell a teacher what they want to hear — that a struggling student is 'improving' or a lesson plan is 'strong' — rather than flag a real problem."},
+          {"n": 4, "title": "Privacy & Data Exposure", "body": "Grades, IEPs, disciplinary notes, or family details typed into an AI tool may be stored, reused to train the model, or exposed to others."},
+          {"n": 5, "title": "Accountability Gap", "body": "When an AI-assisted grade or flag turns out to be wrong, it's unclear whether the teacher, the school, or the AI vendor is responsible for fixing it."},
+          {"n": 6, "title": "The Black Box", "body": "Teachers often can't see why an AI tool gave a particular grade or flagged a student as 'at risk' — hard to explain to a student or a parent."},
+          {"n": 7, "title": "Over-Reliance & De-skilling", "body": "Leaning on AI for grading, planning, or feedback can quietly erode a teacher's own instinct for reading student work and adjusting on the fly."},
+          {"n": 8, "title": "Loss of Human Trust", "body": "Students and parents can feel dismissed if they sense a teacher's feedback, email, or recommendation letter was mostly AI-written."},
+          {"n": 9, "title": "Security Vulnerability", "body": "Classroom AI tools and chatbots can be hacked or tricked (\"jailbroken\") into producing inappropriate or harmful content for students."},
+          {"n": 10, "title": "Homogenization", "body": "If every student's essay gets nudged toward the same AI-favored structure and voice, classroom writing can start to sound the same."},
+          {"n": 11, "title": "Legal & Regulatory Liability", "body": "Using AI on minors' data, or for high-stakes calls like grades or discipline, can run into student privacy laws and school policy."},
+          {"n": 12, "title": "Reputational Damage", "body": "One viral case of an unfair AI grade or a wrongly flagged cheating accusation can damage trust in a teacher or a school fast."},
+          {"n": 13, "title": "Cognitive Surrender", "body": "Teachers stop double-checking AI-generated grades, feedback, or content and just accept it — even on calls that deserve a closer look."},
+          {"n": 14, "title": "Environmental Impact", "body": "The AI tools teachers use every day run on data centers that consume real energy and water — a cost worth weighing against the time saved."}
+        ],
+        "potentials": [
+          {"n": 1, "title": "Time & Efficiency", "body": "AI can turn hours of grading or lesson-planning into minutes, freeing up time for actual teaching and one-on-one support."},
+          {"n": 2, "title": "Scale & Reach", "body": "One teacher's after-hours chatbot can answer dozens of students' questions at once — something no single teacher could do alone."},
+          {"n": 3, "title": "24/7 Availability", "body": "Students can get homework help or a concept explained at 11pm, not just during school hours."},
+          {"n": 4, "title": "Personalization", "body": "AI can adjust reading level, pacing, or examples for each student's needs — including IEPs and English learners — far faster than doing it by hand."},
+          {"n": 5, "title": "Consistency", "body": "AI applies the same rubric the same way to every student's work, reducing the day-to-day mood or fatigue effects that creep into manual grading."},
+          {"n": 6, "title": "Early Pattern Detection", "body": "AI can spot a student quietly slipping — falling attendance, dropping grades — before it becomes a crisis, giving teachers time to step in."},
+          {"n": 7, "title": "Augmented Decision-Making", "body": "AI can suggest a grade or flag a concern, but the teacher still makes the final call — using judgment of the whole student, not just the data."},
+          {"n": 8, "title": "Cost Reduction", "body": "Automating routine tasks like scheduling or first-pass grading can free up school budget for things that need a human — smaller classes, more support staff."},
+          {"n": 9, "title": "Accessibility", "body": "Live translation and text-to-speech tools can make a lesson usable for English learners and students with disabilities in real time."},
+          {"n": 10, "title": "Frees Staff for Higher-Value Work", "body": "Cutting time spent on routine grading and admin work lets teachers spend more time actually teaching, mentoring, and connecting with students."},
+          {"n": 11, "title": "Faster Iteration", "body": "AI can quickly generate multiple versions of a lesson or quiz, so teachers can try something and adjust it instead of starting from scratch."},
+          {"n": 12, "title": "Data-Driven Insight", "body": "AI can turn a semester's worth of scattered grades and notes into a clear picture of where a student — or a whole class — is struggling."}
+        ]
+      },
+      "student": {
+        "use_cases": [
+          {"n": 1, "cat": "Writing", "title": "Brainstorming Essay Ideas", "body": "A student asks AI to suggest possible thesis statements and angles before starting to write a paper."},
+          {"n": 2, "cat": "Coding", "title": "Debugging Code with AI", "body": "A student pastes broken code from a programming assignment into AI and asks it to find and fix the error."},
+          {"n": 3, "cat": "Study Skills", "title": "Summarizing a Long Reading", "body": "Facing 60 pages of assigned reading the night before class, a student asks AI to summarize the key points instead of reading it all."},
+          {"n": 4, "cat": "Study Skills", "title": "24/7 Study Buddy for Exams", "body": "A student uses an AI chatbot to quiz them and explain concepts at 1am, when no classmate or tutor is available."},
+          {"n": 5, "cat": "Language", "title": "Translating a Foreign-Language Text", "body": "A student uses AI to translate an assigned reading in a language class instead of working through it themselves."},
+          {"n": 6, "cat": "Writing", "title": "AI Grammar & Style Check", "body": "Before submitting an essay, a student runs it through AI to catch grammar mistakes and improve awkward sentences."},
+          {"n": 7, "cat": "Study Skills", "title": "AI-Generated Flashcards", "body": "A student uploads their lecture notes and asks AI to turn them into a set of flashcards for exam review."},
+          {"n": 8, "cat": "Collaboration", "title": "AI-Managed Group Project", "body": "A student uses AI to split up tasks and build a timeline for a group project, then shares the plan with teammates."},
+          {"n": 9, "cat": "Study Skills", "title": "Step-by-Step Concept Explainer", "body": "A student asks AI to explain a difficult math or science concept a different way after not understanding it in class."},
+          {"n": 10, "cat": "Writing", "title": "AI-Written First Draft", "body": "Short on time, a student asks AI to write a full first draft of an essay, which they plan to edit before turning it in."},
+          {"n": 11, "cat": "Career Prep", "title": "AI Mock Interview Practice", "body": "A student practices answering interview questions with an AI tool ahead of a real internship or job interview."},
+          {"n": 12, "cat": "Research", "title": "Fact-Checking a Claim", "body": "Before including a statistic in a research paper, a student asks AI to verify whether the claim is accurate and where it comes from."},
+          {"n": 13, "cat": "Study Skills", "title": "AI-Generated Practice Problems", "body": "A student asks AI to generate extra practice problems similar to ones from a hard homework set, to build more confidence before a test."},
+          {"n": 14, "cat": "Academic Integrity", "title": "Using AI During a Timed Test", "body": "During a proctored, closed-resource exam, a student secretly opens an AI chatbot on their phone to help answer questions."},
+          {"n": 15, "cat": "Advising", "title": "AI Course & Elective Recommendations", "body": "A student asks AI which electives to take next semester based on their transcript, interests, and career goals."},
+          {"n": 16, "cat": "Career Prep", "title": "AI-Written Resume & Cover Letter", "body": "A student asks AI to write a resume and cover letter for a summer internship application from a short list of experiences."},
+          {"n": 17, "cat": "Collaboration", "title": "AI-Generated Presentation Slides", "body": "A student asks AI to design and write the slides for a class presentation, including the speaker notes."},
+          {"n": 18, "cat": "Wellbeing", "title": "Turning to AI for Emotional Support", "body": "Stressed about grades and feeling like they have no one to talk to, a student starts confiding in an AI chatbot late at night."}
+        ],
+        "risks": [
+          {"n": 1, "title": "Bias & Discrimination", "body": "AI writing and grading tools can be less accurate for students who write in a different dialect, are non-native English speakers, or come from a background underrepresented in the AI's training data."},
+          {"n": 2, "title": "Hallucination", "body": "AI confidently gives you facts, citations, or explanations that are just wrong — risky if you're using it to research a paper or study for an exam."},
+          {"n": 3, "title": "Sycophancy", "body": "AI tends to tell you your essay or argument is stronger than it actually is, instead of giving the honest critique that would actually improve it."},
+          {"n": 4, "title": "Privacy & Data Exposure", "body": "Personal details you type into a chatbot — about your grades, your family, or even your mental health — may be stored or used in ways you don't expect."},
+          {"n": 5, "title": "Accountability Gap", "body": "If AI gives you wrong information and you use it in an assignment, it's not always clear who's responsible when it goes wrong — you, or the tool."},
+          {"n": 6, "title": "The Black Box", "body": "AI can't always explain why it gave you a particular answer, which makes it hard to know if you can actually trust — or learn from — what it told you."},
+          {"n": 7, "title": "Over-Reliance & De-skilling", "body": "Leaning on AI to write your essays or solve your problem sets can mean you never actually build the skill you were supposed to be practicing."},
+          {"n": 8, "title": "Loss of Human Trust", "body": "A teacher, teammate, or interviewer who suspects your work is mostly AI-written may stop trusting your work altogether — even the parts you wrote yourself."},
+          {"n": 9, "title": "Security Vulnerability", "body": "AI chatbots can be tricked into giving harmful, inappropriate, or unsafe advice if someone knows how to manipulate them."},
+          {"n": 10, "title": "Homogenization", "body": "If everyone uses AI to polish their essays the same way, papers across a whole class can start to sound alike — and your own voice can get lost."},
+          {"n": 11, "title": "Legal & Regulatory Liability", "body": "Submitting AI-generated work as entirely your own can violate your school's academic integrity policy, even if you didn't mean to break a rule."},
+          {"n": 12, "title": "Reputational Damage", "body": "Getting caught passing off AI work as your own can follow you — affecting a grade, a recommendation, or how a teacher sees you going forward."},
+          {"n": 13, "title": "Cognitive Surrender", "body": "It's easy to stop thinking something through yourself and just take whatever AI says as the answer — even when it's worth double-checking."},
+          {"n": 14, "title": "Environmental Impact", "body": "Every AI chat you send runs on a data center that uses real energy and water — a small cost that adds up across millions of students doing the same thing."}
+        ],
+        "potentials": [
+          {"n": 1, "title": "Time & Efficiency", "body": "AI can get you through repetitive tasks — formatting citations, catching a typo — faster, leaving more time for the parts that actually require thinking."},
+          {"n": 2, "title": "Scale & Reach", "body": "A single AI study tool can help you review material in ways that would otherwise require hiring a tutor or finding a study group at the right time."},
+          {"n": 3, "title": "24/7 Availability", "body": "AI can explain a concept or quiz you at 1am before an exam, when no professor, TA, or classmate is around."},
+          {"n": 4, "title": "Personalization", "body": "AI can explain the same concept several different ways until one actually clicks — something a single textbook explanation can't do."},
+          {"n": 5, "title": "Consistency", "body": "AI gives the same quality of explanation every time you ask, without having a bad day or losing patience the way a person might."},
+          {"n": 6, "title": "Early Pattern Detection", "body": "AI can help you notice patterns in your own quiz mistakes or study habits that you might not catch on your own."},
+          {"n": 7, "title": "Augmented Decision-Making", "body": "AI can help you think through options — like which courses to take — by laying out information, while you make the actual decision based on what matters to you."},
+          {"n": 8, "title": "Cost Reduction", "body": "Free or low-cost AI tools can substitute for expensive tutoring or paid study resources for some tasks."},
+          {"n": 9, "title": "Accessibility", "body": "Text-to-speech, translation, and simplification tools can make dense readings or lectures usable for students with disabilities or language barriers."},
+          {"n": 10, "title": "Frees You Up for Higher-Value Work", "body": "Letting AI handle rote formatting or basic research frees up your time and energy for the actual thinking, writing, and problem-solving that build your skills."},
+          {"n": 11, "title": "Faster Iteration", "body": "AI can help you generate a rough first draft or extra practice problems quickly, so you spend your time revising and improving instead of staring at a blank page."},
+          {"n": 12, "title": "Data-Driven Insight", "body": "AI can help you make sense of a big pile of lecture notes or readings, turning them into something organized you can actually study from."}
+        ]
+      },
+      "decisions": [
+        {"n": 1, "title": "TO AI", "body": "Use AI for this, largely as-is.", "cls": "yes"},
+        {"n": 2, "title": "NOT TO AI", "body": "Keep this fully human. Do not use AI here.", "cls": "no"},
+        {"n": 3, "title": "TO AI — WITH GUARDRAILS", "body": "Use AI, but only with specific safeguards in place (e.g. human review, disclosure, audit, opt-out).", "cls": "guard"}
+      ]
+    };
+
+    class CardGameApp {
+      constructor() {
+        this.state = {
+          role: 'guest', // host, player
+          roomCode: null,
+          playerName: 'Guest Player',
+          playerId: 'p_' + Math.random().toString(36).substring(2, 9),
+          groupId: 'group_1',
+          edition: 'leadership',
+          playMode: 'whole_class', // whole_class, small_groups
+          currentRoundIndex: 0,
+          timerMinutes: 7,
+          isFirebaseConnected: false,
+          sessionData: null,
+          myHand: [],
+          myFlags: {}, // cardKey: note
+          myVote: null,
+          promotedCards: [],
+          votingOpen: false,
+          notesLog: []
+        };
+
+        this.db = null;
+        this.unsubscribeSession = null;
+        this.timerInterval = null;
+        this.timerSeconds = 420;
+      }
+
+      init() {
+        const savedConfig = localStorage.getItem('to_ai_firebase_config');
+        if (savedConfig) {
+          try {
+            const configObj = JSON.parse(savedConfig);
+            this.initFirebase(configObj);
+            document.getElementById('firebase-config-input').value = savedConfig;
+          } catch(e) { console.warn("Invalid saved firebase config"); }
+        }
+
+        const savedSessionToken = localStorage.getItem('to_ai_session_token');
+        if (savedSessionToken) {
+          // Reconnect capability hint
+          console.log("Found existing session token:", savedSessionToken);
+        }
+
+        this.renderView('landing');
+      }
+
+      initFirebase(config) {
+        try {
+          if (window.FirebaseSDK) {
+            const { initializeApp, getFirestore } = window.FirebaseSDK;
+            const firebaseApp = initializeApp(config);
+            this.db = getFirestore(firebaseApp);
+            this.state.isFirebaseConnected = true;
+            
+            document.getElementById('cloud-status-text').textContent = "Cloud Live Sync";
+            document.getElementById('btn-cloud-config').classList.add('bg-emerald-900', 'border-emerald-700');
+            this.showToast("Connected to Firebase Firestore Cloud!", "success");
+          }
+        } catch(err) {
+          console.error("Firebase init failed:", err);
+          this.showToast("Failed to initialize Firebase: " + err.message, "error");
+        }
+      }
+
+      /* View Switcher */
+      renderView(viewId) {
+        ['landing', 'host-setup', 'lobby', 'round-class', 'small-groups', 'debrief'].forEach(id => {
+          const el = document.getElementById(`view-${id}`);
+          if (el) el.classList.add('hidden');
+        });
+
+        const target = document.getElementById(`view-${viewId}`);
+        if (target) target.classList.remove('hidden');
+
+        // Header sync
+        const statusEl = document.getElementById('header-status');
+        if (viewId === 'landing' || viewId === 'host-setup') {
+          statusEl.classList.add('hidden');
+        } else {
+          statusEl.classList.remove('hidden');
+          document.getElementById('header-room-code').textContent = this.state.roomCode || '----';
+          document.getElementById('badge-mode').innerHTML = `Mode: <strong class="text-white">${this.state.playMode === 'whole_class' ? 'Whole Class' : 'Small Groups'}</strong>`;
+          document.getElementById('badge-edition').innerHTML = `Edition: <strong class="text-white capitalize">${this.state.edition}</strong>`;
+        }
+      }
+
+      goHome() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.renderView('landing');
+      }
+
+      showHostSetup() {
+        this.renderView('host-setup');
+      }
+
+      toggleSmallGroupOptions() {
+        const el = document.getElementById('small-group-options');
+        const modeVal = document.querySelector('input[name="playMode"]:checked')?.value;
+        if (modeVal === 'small_groups') {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      }
+
+      createSession(e) {
+        e.preventDefault();
+        const hostName = document.getElementById('setup-host-name').value || 'Host Teacher';
+        const edition = document.querySelector('input[name="edition"]:checked').value;
+        const playMode = document.querySelector('input[name="playMode"]:checked').value;
+        const timerMinutes = parseInt(document.getElementById('setup-timer').value || '7');
+        const roomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+
+        this.state.role = 'host';
+        this.state.playerName = hostName;
+        this.state.roomCode = roomCode;
+        this.state.edition = edition;
+        this.state.playMode = playMode;
+        this.state.timerMinutes = timerMinutes;
+        this.state.currentRoundIndex = 0;
+
+        // Calculate 14-day expiry for TTL policy
+        const now = Date.now();
+        const expiresAt = now + (14 * 24 * 60 * 60 * 1000);
+
+        this.state.sessionData = {
+          roomCode,
+          hostName,
+          edition,
+          playMode,
+          timerMinutes,
+          currentRoundIndex: 0,
+          status: 'lobby',
+          createdAt: now,
+          expiresAt: expiresAt,
+          players: [
+            { id: this.state.playerId, name: hostName, isHost: true, group: 'Group 1' }
+          ],
+          flaggedCards: {}, // key -> count
+          votes: { yes: 0, no: 0, guard: 0 },
+          votingOpen: false,
+          promotedCards: [],
+          notesLog: [],
+          groups: playMode === 'small_groups' ? [
+            { id: 'group_1', name: 'Group 1 — Delta', currentRoundIndex: 0, driverId: this.state.playerId, notesLog: [] },
+            { id: 'group_2', name: 'Group 2 — Echo', currentRoundIndex: 0, driverId: null, notesLog: [] }
+          ] : []
+        };
+
+        this.updateLobbyUI();
+        this.renderView('lobby');
+        this.showToast(`Room created: ${roomCode}`, 'success');
+
+        if (this.state.isFirebaseConnected && this.db) {
+          this.syncSessionToFirebase();
+        }
+      }
+
+      joinSession(e) {
+        e.preventDefault();
+        const code = document.getElementById('join-room-code').value.trim().toUpperCase();
+        const name = document.getElementById('join-player-name').value.trim();
+
+        if (!code || !name) return;
+
+        this.state.role = 'player';
+        this.state.playerName = name;
+        this.state.roomCode = code;
+
+        if (this.state.sessionData && this.state.sessionData.roomCode === code) {
+          // Join existing local session
+          this.state.sessionData.players.push({
+            id: this.state.playerId,
+            name: name,
+            isHost: false,
+            group: 'Group 1'
+          });
+          this.updateLobbyUI();
+          this.renderView('lobby');
+          this.showToast(`Joined session ${code}!`, 'success');
+        } else {
+          // Default fallback join
+          this.state.sessionData = {
+            roomCode: code,
+            hostName: 'Teacher Host',
+            edition: 'leadership',
+            playMode: 'whole_class',
+            status: 'lobby',
+            players: [{ id: this.state.playerId, name, isHost: false, group: 'Group 1' }]
+          };
+          this.updateLobbyUI();
+          this.renderView('lobby');
+          this.showToast(`Joined session ${code}!`, 'success');
+        }
+      }
+
+      startLocalDemo() {
+        this.state.role = 'host';
+        this.state.playerName = 'Demo Facilitator';
+        this.state.roomCode = 'DEMO1';
+        this.state.edition = 'leadership';
+        this.state.playMode = 'whole_class';
+        
+        this.state.sessionData = {
+          roomCode: 'DEMO1',
+          hostName: 'Demo Facilitator',
+          edition: 'leadership',
+          playMode: 'whole_class',
+          currentRoundIndex: 0,
+          status: 'lobby',
+          players: [
+            { id: this.state.playerId, name: 'Demo Facilitator', isHost: true },
+            { id: 'sim_1', name: 'Alex Student', isHost: false },
+            { id: 'sim_2', name: 'Jordan Student', isHost: false },
+            { id: 'sim_3', name: 'Taylor Student', isHost: false }
+          ],
+          flaggedCards: {},
+          votes: { yes: 0, no: 0, guard: 0 },
+          votingOpen: false,
+          notesLog: []
+        };
+
+        this.updateLobbyUI();
+        this.renderView('lobby');
+        this.showToast("Quick Demo Session Initialized!", "success");
+      }
+
+      addSimulatedPlayer() {
+        if (!this.state.sessionData) return;
+        const names = ['Morgan', 'Riley', 'Casey', 'Sam', 'Dakota', 'Avery', 'Reese'];
+        const randomName = names[Math.floor(Math.random() * names.length)] + ' (Sim)';
+        this.state.sessionData.players.push({
+          id: 'sim_' + Math.random().toString(36).substring(2, 7),
+          name: randomName,
+          isHost: false,
+          group: 'Group 1'
+        });
+        this.updateLobbyUI();
+        this.showToast(`Added ${randomName}`, 'info');
+      }
+
+      updateLobbyUI() {
+        if (!this.state.sessionData) return;
+        const data = this.state.sessionData;
+        
+        document.getElementById('lobby-room-code').textContent = data.roomCode;
+        document.getElementById('lobby-player-count').textContent = data.players.length;
+        document.getElementById('lobby-edition-label').textContent = data.edition;
+        document.getElementById('lobby-mode-label').textContent = data.playMode.replace('_', ' ');
+
+        const listEl = document.getElementById('lobby-player-list');
+        listEl.innerHTML = data.players.map(p => `
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center space-x-2 text-xs">
+            <div class="w-7 h-7 rounded-full bg-navy text-white font-bold flex items-center justify-center text-[10px]">
+              ${p.name.substring(0, 2).toUpperCase()}
+            </div>
+            <div class="truncate">
+              <span class="font-bold text-slate-800 block truncate">${p.name}</span>
+              <span class="text-[10px] text-slate-500">${p.isHost ? 'Host Facilitator' : 'Participant'}</span>
+            </div>
+          </div>
+        `).join('');
+
+        if (this.state.role !== 'host') {
+          document.getElementById('btn-start-session').classList.add('hidden');
+          document.getElementById('btn-add-simulated').classList.add('hidden');
+        } else {
+          document.getElementById('btn-start-session').classList.remove('hidden');
+          document.getElementById('btn-add-simulated').classList.remove('hidden');
+        }
+      }
+
+      copyRoomCode() {
+        const code = this.state.roomCode;
+        if (!code) return;
+        const temp = document.createElement('textarea');
+        temp.value = code;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        this.showToast(`Room Code ${code} copied to clipboard!`, 'success');
+      }
+
+      startSessionFromLobby() {
+        if (!this.state.sessionData) return;
+        this.state.sessionData.status = 'playing';
+
+        // Deal cards across participants round-robin
+        this.dealCardsToPlayers();
+
+        if (this.state.playMode === 'whole_class') {
+          this.initRoundViewClass();
+          this.renderView('round-class');
+        } else {
+          this.initSmallGroupsView();
+          this.renderView('small-groups');
+        }
+
+        this.startTimer(this.state.timerMinutes * 60);
+      }
+
+      dealCardsToPlayers() {
+        const edition = this.state.edition;
+        const dataset = GAME_DATA[edition];
+        const risks = dataset.risks.map(r => ({ ...r, type: 'risk' }));
+        const potentials = dataset.potentials.map(p => ({ ...p, type: 'potential' }));
+        const allCards = [...risks, ...potentials]; // 26 cards total
+
+        const players = this.state.sessionData.players;
+        const hands = {};
+        players.forEach(p => hands[p.id] = []);
+
+        // Distribute round-robin
+        allCards.forEach((card, idx) => {
+          const targetPlayer = players[idx % players.length];
+          if (targetPlayer) {
+            hands[targetPlayer.id].push(card);
+          }
+        });
+
+        // Set local player's hand
+        this.state.myHand = hands[this.state.playerId] || allCards.slice(0, 4); // fallback
+        document.getElementById('hand-card-count').textContent = this.state.myHand.length;
+      }
+
+      initRoundViewClass() {
+        const edition = this.state.edition;
+        const roundIdx = this.state.currentRoundIndex;
+        const useCases = GAME_DATA[edition].use_cases;
+        const currentCase = useCases[roundIdx % useCases.length];
+
+        document.getElementById('round-num').textContent = roundIdx + 1;
+        document.getElementById('round-usecase-cat').textContent = currentCase.cat;
+        document.getElementById('round-usecase-title').textContent = currentCase.title;
+        document.getElementById('round-usecase-body').textContent = currentCase.body;
+
+        // Render Student Hand
+        this.renderPlayerHand();
+
+        // Host controls visibility
+        if (this.state.role === 'host') {
+          document.getElementById('host-round-controls').classList.remove('hidden');
+          document.getElementById('host-promotion-panel').classList.remove('hidden');
+          document.getElementById('host-lock-panel').classList.remove('hidden');
+          document.getElementById('guardrail-input-container').classList.remove('hidden');
+        } else {
+          document.getElementById('host-round-controls').classList.add('hidden');
+          document.getElementById('host-promotion-panel').classList.add('hidden');
+          document.getElementById('host-lock-panel').classList.add('hidden');
+          document.getElementById('guardrail-input-container').classList.add('hidden');
+        }
+
+        this.updateFlaggedSummary();
+      }
+
+      renderPlayerHand() {
+        const container = document.getElementById('player-hand-container');
+        if (!this.state.myHand || this.state.myHand.length === 0) {
+          container.innerHTML = `<div class="p-4 bg-white rounded-xl border border-slate-200 text-xs text-slate-400 text-center">No cards in your watch area for this edition.</div>`;
+          return;
+        }
+
+        container.innerHTML = this.state.myHand.map(card => {
+          const isRisk = card.type === 'risk';
+          const cardKey = `${card.type}_${card.n}`;
+          const isFlagged = !!this.state.myFlags[cardKey];
+
+          return `
+            <div class="p-4 rounded-xl border-2 transition ${isRisk ? 'bg-risk-light/30 border-risk/30 hover:border-risk' : 'bg-opp-light/30 border-opp/30 hover:border-opp'} ${isFlagged ? 'ring-2 ring-gold-amber' : ''}">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${isRisk ? 'bg-risk text-white' : 'bg-opp text-white'}">
+                  ${isRisk ? 'Risk Card' : 'Opportunity Card'} #${card.n}
+                </span>
+                <button onclick="app.toggleFlagCard('${card.type}', ${card.n})" class="text-xs font-bold px-2.5 py-1 rounded-lg transition ${isFlagged ? 'bg-gold-amber text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">
+                  <i class="fa-solid fa-flag text-[10px] mr-1"></i>
+                  ${isFlagged ? 'Flagged' : 'Flag'}
+                </button>
+              </div>
+              <h4 class="text-xs font-bold text-navy mb-1">${card.title}</h4>
+              <p class="text-[11px] text-slate-600 leading-relaxed">${card.body}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      toggleFlagCard(type, n) {
+        const cardKey = `${type}_${n}`;
+        if (this.state.myFlags[cardKey]) {
+          delete this.state.myFlags[cardKey];
+        } else {
+          this.state.myFlags[cardKey] = 'Flagged by student';
+        }
+
+        this.renderPlayerHand();
+        this.updateFlaggedSummary();
+      }
+
+      updateFlaggedSummary() {
+        const flaggedList = document.getElementById('class-flagged-list');
+        const dataset = GAME_DATA[this.state.edition];
+
+        // Combine flags across current session
+        const flagCounts = { ...this.state.myFlags };
+        // Add simulated flags for vibrant preview
+        if (Object.keys(flagCounts).length === 0) {
+          flagCounts['risk_1'] = true;
+          flagCounts['potential_1'] = true;
+        }
+
+        const keys = Object.keys(flagCounts);
+        document.getElementById('flagged-total-badge').textContent = `${keys.length} Flagged Cards`;
+
+        if (keys.length === 0) {
+          flaggedList.innerHTML = `<div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">No cards flagged yet this round.</div>`;
+          return;
+        }
+
+        flaggedList.innerHTML = keys.map(key => {
+          const [type, nStr] = key.split('_');
+          const n = parseInt(nStr);
+          const isRisk = type === 'risk';
+          const pool = isRisk ? dataset.risks : dataset.potentials;
+          const cardObj = pool.find(c => c.n === n) || { title: `Card #${n}`, body: '' };
+
+          const isPromoted = this.state.promotedCards.includes(key);
+
+          return `
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between text-xs space-x-2">
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${isRisk ? 'bg-risk text-white' : 'bg-opp text-white'}">
+                    ${isRisk ? 'Risk' : 'Potential'} #${n}
+                  </span>
+                  <span class="font-bold text-navy">${cardObj.title}</span>
+                </div>
+                <p class="text-[11px] text-slate-600 line-clamp-2">${cardObj.body}</p>
+              </div>
+              ${this.state.role === 'host' ? `
+                <button onclick="app.togglePromoteCard('${key}')" class="px-2.5 py-1 text-[10px] font-bold rounded ${isPromoted ? 'bg-navy text-white' : 'bg-slate-200 text-slate-700'}">
+                  ${isPromoted ? 'Promoted' : 'Promote'}
+                </button>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      togglePromoteCard(cardKey) {
+        const idx = this.state.promotedCards.indexOf(cardKey);
+        if (idx >= 0) {
+          this.state.promotedCards.splice(idx, 1);
+        } else {
+          if (this.state.promotedCards.length < 6) {
+            this.state.promotedCards.push(cardKey);
+          } else {
+            this.showToast("Maximum 6 promoted cards per round.", "info");
+          }
+        }
+        this.updateFlaggedSummary();
+        this.renderPromotedBadges();
+      }
+
+      renderPromotedBadges() {
+        const container = document.getElementById('selected-cards-badges');
+        container.innerHTML = this.state.promotedCards.map(key => `
+          <span class="px-2.5 py-1 bg-navy text-white text-[10px] font-bold rounded-md flex items-center space-x-1">
+            <span>${key.replace('_', ' #')}</span>
+            <i class="fa-solid fa-xmark ml-1 cursor-pointer" onclick="app.togglePromoteCard('${key}')"></i>
+          </span>
+        `).join('');
+      }
+
+      hostOpenVoting() {
+        this.state.votingOpen = true;
+        document.getElementById('voting-status-badge').textContent = "Voting Open!";
+        document.getElementById('voting-status-badge').className = "px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full animate-pulse";
+
+        ['btn-vote-yes', 'btn-vote-no', 'btn-vote-guard'].forEach(id => {
+          document.getElementById(id).removeAttribute('disabled');
+        });
+
+        this.showToast("Voting is now open to all devices!", "success");
+      }
+
+      castVote(choice) {
+        if (!this.state.votingOpen && this.state.role !== 'host') {
+          this.showToast("Voting is not open yet.", "info");
+          return;
+        }
+
+        this.state.myVote = choice;
+        this.showToast(`Vote recorded: ${choice}`, "success");
+
+        // Simulate class voting distribution
+        const votes = { yes: 1, no: 0, guard: 2 };
+        if (choice === 'TO AI') votes.yes += 1;
+        if (choice === 'NOT TO AI') votes.no += 1;
+        if (choice === 'TO AI — WITH GUARDRAILS') votes.guard += 1;
+
+        const total = votes.yes + votes.no + votes.guard;
+        document.getElementById('count-vote-yes').textContent = `${votes.yes} votes`;
+        document.getElementById('count-vote-no').textContent = `${votes.no} votes`;
+        document.getElementById('count-vote-guard').textContent = `${votes.guard} votes`;
+
+        document.getElementById('bar-vote-yes').style.width = `${(votes.yes / total) * 100}%`;
+        document.getElementById('bar-vote-no').style.width = `${(votes.no / total) * 100}%`;
+        document.getElementById('bar-vote-guard').style.width = `${(votes.guard / total) * 100}%`;
+      }
+
+      hostCommitDecision() {
+        const edition = this.state.edition;
+        const roundIdx = this.state.currentRoundIndex;
+        const useCase = GAME_DATA[edition].use_cases[roundIdx % 18];
+        const guardrailText = document.getElementById('guardrail-text-input').value.trim();
+
+        const decisionEntry = {
+          round: roundIdx + 1,
+          useCaseTitle: useCase.title,
+          category: useCase.cat,
+          decision: this.state.myVote || 'TO AI — WITH GUARDRAILS',
+          guardrailText: guardrailText || 'Human sign-off required prior to taking high-stakes action.',
+          promotedCards: [...this.state.promotedCards]
+        };
+
+        this.state.notesLog.push(decisionEntry);
+        this.showToast(`Decision locked for Case #${roundIdx + 1}!`, "success");
+
+        // Reset for next
+        this.state.promotedCards = [];
+        this.state.myFlags = {};
+        document.getElementById('guardrail-text-input').value = '';
+      }
+
+      hostNextRound() {
+        this.state.currentRoundIndex += 1;
+        if (this.state.currentRoundIndex >= 18) {
+          this.showDebriefScreen();
+          return;
+        }
+        this.initRoundViewClass();
+        this.showToast(`Advanced to Use Case #${this.state.currentRoundIndex + 1}`, "info");
+      }
+
+      initSmallGroupsView() {
+        const container = document.getElementById('groups-grid-container');
+        const groups = [
+          { name: 'Group 1 — Delta', round: 2, decision: 'TO AI' },
+          { name: 'Group 2 — Echo', round: 1, decision: 'WITH GUARDRAILS' },
+          { name: 'Group 3 — Foxtrot', round: 2, decision: 'NOT TO AI' }
+        ];
+
+        container.innerHTML = groups.map(g => `
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 card-shadow space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 class="text-sm font-bold text-navy">${g.name}</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">Round ${g.round}</span>
+            </div>
+            <p class="text-xs text-slate-600">Current Case: Essay Screening</p>
+            <div class="flex items-center justify-between text-xs font-semibold">
+              <span class="text-slate-500">Last Decision:</span>
+              <span class="text-gold-amber font-bold">${g.decision}</span>
+            </div>
+          </div>
+        `).join('');
+
+        this.renderView('small-groups');
+      }
+
+      showDebriefScreen() {
+        const log = this.state.notesLog;
+        
+        let countYes = 0, countNo = 0, countGuard = 0;
+        log.forEach(item => {
+          if (item.decision.includes('NOT')) countNo++;
+          else if (item.decision.includes('GUARDRAILS')) countGuard++;
+          else countYes++;
+        });
+
+        document.getElementById('debrief-count-yes').textContent = countYes;
+        document.getElementById('debrief-count-no').textContent = countNo;
+        document.getElementById('debrief-count-guard').textContent = countGuard;
+
+        // Render Cross Group Matrix if Mode B
+        if (this.state.playMode === 'small_groups') {
+          document.getElementById('cross-group-matrix-panel').classList.remove('hidden');
+          const tableBody = document.getElementById('cross-group-table-body');
+          tableBody.innerHTML = `
+            <tr class="bg-red-50 text-red-900">
+              <td class="p-3 font-bold">Essay Screening</td>
+              <td class="p-3 font-semibold text-opp">TO AI</td>
+              <td class="p-3 font-semibold text-risk">NOT TO AI</td>
+              <td class="p-3 font-semibold text-gold-amber">WITH GUARDRAILS</td>
+              <td class="p-3 font-bold text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i> SPLIT DECISION</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-bold">Crisis Statement</td>
+              <td class="p-3 font-semibold text-gold-amber">WITH GUARDRAILS</td>
+              <td class="p-3 font-semibold text-gold-amber">WITH GUARDRAILS</td>
+              <td class="p-3 font-semibold text-gold-amber">WITH GUARDRAILS</td>
+              <td class="p-3 font-bold text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i> CONSENSUS</td>
+            </tr>
+          `;
+        } else {
+          document.getElementById('cross-group-matrix-panel').classList.add('hidden');
+        }
+
+        // Render Log Table
+        const logContainer = document.getElementById('notes-log-container');
+        if (log.length === 0) {
+          logContainer.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs border border-dashed border-slate-200 rounded-xl">No rounds logged yet. Complete rounds to populate log.</div>`;
+        } else {
+          logContainer.innerHTML = log.map((item, i) => `
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+              <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                <span class="font-bold text-navy">Round #${item.round}: ${item.useCaseTitle} (${item.category})</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${item.decision.includes('NOT') ? 'bg-risk text-white' : item.decision.includes('GUARDRAILS') ? 'bg-gold-amber text-white' : 'bg-opp text-white'}">
+                  ${item.decision}
+                </span>
+              </div>
+              ${item.guardrailText ? `<p class="text-slate-700 italic">"Guardrail: ${item.guardrailText}"</p>` : ''}
+            </div>
+          `).join('');
+        }
+
+        this.renderView('debrief');
+      }
+
+      exportNotesCSV() {
+        const log = this.state.notesLog;
+        if (log.length === 0) {
+          this.showToast("No notes to export yet.", "info");
+          return;
+        }
+
+        let csv = "Round,Category,Use Case Title,Decision,Guardrail Text\n";
+        log.forEach(item => {
+          csv += `"${item.round}","${item.category}","${item.useCaseTitle}","${item.decision}","${item.guardrailText.replace(/"/g, '""')}"\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `To_AI_Notes_Log_${this.state.roomCode}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.showToast("Exported session log to CSV!", "success");
+      }
+
+      copyNotesText() {
+        const log = this.state.notesLog;
+        let text = `TO AI OR NOT TO AI? — SESSION LOG (${this.state.roomCode})\n\n`;
+        log.forEach(item => {
+          text += `Round #${item.round}: ${item.useCaseTitle} [${item.category}]\nDecision: ${item.decision}\nGuardrail: ${item.guardrailText}\n---\n`;
+        });
+
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        this.showToast("Notes log copied to clipboard!", "success");
+      }
+
+      showFirebaseModal() { document.getElementById('modal-firebase').classList.remove('hidden'); }
+      hideFirebaseModal() { document.getElementById('modal-firebase').classList.add('hidden'); }
+      showHelpModal() { document.getElementById('modal-help').classList.remove('hidden'); }
+      hideHelpModal() { document.getElementById('modal-help').classList.add('hidden'); }
+
+      saveFirebaseConfig() {
+        const val = document.getElementById('firebase-config-input').value.trim();
+        try {
+          const configObj = JSON.parse(val);
+          localStorage.setItem('to_ai_firebase_config', val);
+          this.initFirebase(configObj);
+          this.hideFirebaseModal();
+        } catch(err) {
+          this.showToast("Invalid JSON syntax in Firebase config.", "error");
+        }
+      }
+
+      clearFirebaseConfig() {
+        localStorage.removeItem('to_ai_firebase_config');
+        this.state.isFirebaseConnected = false;
+        document.getElementById('cloud-status-text').textContent = "Cloud Sync Config";
+        document.getElementById('btn-cloud-config').classList.remove('bg-emerald-900', 'border-emerald-700');
+        this.hideFirebaseModal();
+        this.showToast("Switched to Local Mock Engine.", "info");
+      }
+
+      startTimer(seconds) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerSeconds = seconds;
+        
+        this.timerInterval = setInterval(() => {
+          this.timerSeconds--;
+          if (this.timerSeconds < 0) {
+            clearInterval(this.timerInterval);
+            this.timerSeconds = 0;
+          }
+
+          const m = Math.floor(this.timerSeconds / 60).toString().padStart(2, '0');
+          const s = (this.timerSeconds % 60).toString().padStart(2, '0');
+          const displayEl = document.getElementById('round-timer-display');
+          if (displayEl) displayEl.textContent = `${m}:${s}`;
+        }, 1000);
+      }
+
+      showToast(msg, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        
+        let bg = 'bg-navy text-white';
+        if (type === 'success') bg = 'bg-emerald-800 text-white';
+        if (type === 'error') bg = 'bg-risk text-white';
+
+        toast.className = `${bg} px-4 py-3 rounded-xl text-xs font-semibold shadow-lg transition-all duration-300 transform translate-y-2 pointer-events-auto flex items-center space-x-2`;
+        toast.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${msg}</span>`;
+
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+      }
+    }
+
+    // Initialize global instance
+    window.app = new CardGameApp();
+    window.addEventListener('DOMContentLoaded', () => {
+      window.app.init();
+    });
+  </script>
+</body>
+</html>
