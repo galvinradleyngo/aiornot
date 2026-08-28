@@ -178,6 +178,23 @@
         </p>
       </div>
 
+      <!-- Standalone Single-Device Facilitator Mode -->
+      <div class="mb-6 bg-navy/5 border border-navy/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-xl shadow shrink-0">
+            <i class="fa-solid fa-tv"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-navy">Standalone Facilitator Mode (One Device)</h3>
+            <p class="text-xs text-slate-600 mt-0.5">No room code, no other devices needed. Project the game on one screen — the host enters player names, deals cards, and drags each use case onto the decision board while the class discusses out loud.</p>
+          </div>
+        </div>
+        <button onclick="app.showStandaloneSetup()" class="w-full sm:w-auto px-4 py-2.5 bg-navy hover:bg-navy-dark text-white font-semibold rounded-xl text-xs whitespace-nowrap transition shadow flex items-center justify-center space-x-2">
+          <span>Start Standalone Mode</span>
+          <i class="fa-solid fa-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <!-- Host Card -->
         <div class="bg-white rounded-2xl p-6 border border-slate-200 card-shadow hover:border-navy/40 transition flex flex-col justify-between">
@@ -233,23 +250,6 @@
         </div>
         <button onclick="app.startLocalDemo()" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg text-xs whitespace-nowrap transition shadow">
           Launch Quick Demo
-        </button>
-      </div>
-
-      <!-- Standalone Single-Device Facilitator Mode -->
-      <div class="mt-6 bg-navy/5 border border-navy/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center space-x-4">
-          <div class="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-xl shadow shrink-0">
-            <i class="fa-solid fa-tv"></i>
-          </div>
-          <div>
-            <h3 class="text-sm font-bold text-navy">Standalone Facilitator Mode (One Device)</h3>
-            <p class="text-xs text-slate-600 mt-0.5">No room code, no other devices needed. Project the game on one screen — the host enters player names, deals cards, and drags each use case onto the decision board while the class discusses out loud.</p>
-          </div>
-        </div>
-        <button onclick="app.showStandaloneSetup()" class="w-full sm:w-auto px-4 py-2.5 bg-navy hover:bg-navy-dark text-white font-semibold rounded-xl text-xs whitespace-nowrap transition shadow flex items-center justify-center space-x-2">
-          <span>Start Standalone Mode</span>
-          <i class="fa-solid fa-arrow-right text-[10px]"></i>
         </button>
       </div>
     </section>
@@ -850,94 +850,85 @@
       </div>
     </section>
 
-    <section id="view-standalone-round" class="hidden space-y-6">
-      <!-- Top bar -->
-      <div class="bg-navy rounded-2xl p-4 sm:p-6 text-white card-shadow flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span class="text-xs font-bold text-gold-light uppercase tracking-wider block mb-1">Standalone Facilitator Mode</span>
-          <h2 class="text-lg sm:text-xl font-black text-white">Round <span id="solo-round-num">1</span> of <span id="solo-round-total">18</span></h2>
+    <section id="view-standalone-round" class="hidden flex flex-col gap-3" style="height: calc(100vh - 6.5rem);">
+      <!-- Compact top bar -->
+      <div class="bg-navy rounded-2xl px-4 py-2.5 text-white card-shadow flex items-center justify-between gap-3 shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-xs font-bold text-gold-light uppercase tracking-wider whitespace-nowrap">Round <span id="solo-round-num">1</span>/<span id="solo-round-total">18</span></span>
+          <span id="solo-phase-badge" class="hidden sm:inline-flex px-2.5 py-1 rounded-full bg-white/10 text-[11px] font-bold text-gold-light truncate">Step 1: Shuffling</span>
         </div>
-        <button onclick="app.goHome()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow self-start md:self-auto">
-          <i class="fa-solid fa-right-from-bracket mr-1"></i> End Session
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="app.showStandaloneTracker()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow">
+            <i class="fa-solid fa-table-columns sm:mr-1"></i><span class="hidden sm:inline">Tracker</span>
+          </button>
+          <button onclick="app.goHome()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-lg transition shadow">
+            <i class="fa-solid fa-right-from-bracket sm:mr-1"></i><span class="hidden sm:inline">End</span>
+          </button>
+        </div>
       </div>
 
       <!-- Instruction Banner -->
-      <div id="solo-instruction-banner" class="flash-banner bg-gold-amber text-white rounded-2xl px-5 py-3 text-center font-bold text-sm sm:text-base shadow">
+      <div id="solo-instruction-banner" class="flash-banner bg-gold-amber text-white rounded-xl px-4 py-2.5 text-center font-bold text-xs sm:text-sm shrink-0">
         Get ready...
       </div>
 
-      <!-- Use Case Box -->
-      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-6 sm:p-8 text-center space-y-2">
-        <span id="solo-usecase-cat" class="inline-block px-3 py-1 bg-navy/10 text-navy text-[11px] font-bold uppercase tracking-wider rounded-full">Category</span>
-        <h2 id="solo-usecase-title" class="text-2xl sm:text-3xl font-black text-navy leading-snug">Loading Use Case...</h2>
-        <p id="solo-usecase-body" class="text-sm sm:text-base text-slate-600 max-w-3xl mx-auto">Loading scenario text...</p>
+      <!-- Use Case Box (compact — stays visible but never pushes the stage off-screen) -->
+      <div class="bg-white rounded-2xl border border-slate-200 card-shadow px-5 py-3 text-center shrink-0">
+        <span id="solo-usecase-cat" class="inline-block px-2.5 py-0.5 bg-navy/10 text-navy text-[10px] font-bold uppercase tracking-wider rounded-full">Category</span>
+        <h2 id="solo-usecase-title" class="text-lg sm:text-xl font-black text-navy leading-snug">Loading Use Case...</h2>
+        <p id="solo-usecase-body" class="text-xs sm:text-sm text-slate-600 max-w-3xl mx-auto mt-0.5">Loading scenario text...</p>
       </div>
 
-      <!-- Shuffle / Deal Zone -->
-      <div id="solo-deal-zone" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- Shuffle deck / player hand cards rendered by JS -->
-      </div>
+      <!-- Main Stage: only the panel for the current step is visible, fills remaining viewport -->
+      <div class="flex-1 min-h-0">
 
-      <!-- Submit Vote Button -->
-      <div id="solo-submit-vote-wrap" class="hidden flex justify-center">
-        <button id="solo-submit-vote-btn" onclick="app.submitStandaloneVote()" disabled class="px-6 py-3 bg-navy hover:bg-navy-dark text-white font-bold rounded-xl text-sm shadow disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2">
-          <i class="fa-solid fa-check"></i>
-          <span>Submit Top Picks (<span id="solo-selected-count">0</span>/4)</span>
-        </button>
-      </div>
-
-      <!-- Selected Top 4 Summary -->
-      <div id="solo-selected-summary" class="hidden bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Top Picks for this Use Case</h3>
-        <div id="solo-selected-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
-      </div>
-
-      <!-- Decision Board -->
-      <div id="solo-decision-board" class="hidden bg-white rounded-2xl border border-slate-200 card-shadow p-6 space-y-5">
-        <h3 class="text-sm font-bold text-navy uppercase tracking-wider text-center">Drag the Use Case Card onto Your Decision</h3>
-
-        <div class="flex justify-center">
-          <div id="solo-usecase-chip" draggable="true" ondragstart="app.soloDragStart(event)" class="cursor-grab active:cursor-grabbing px-5 py-3 bg-navy text-white rounded-xl font-bold text-sm shadow-lg flex items-center space-x-2">
-            <i class="fa-solid fa-up-down-left-right"></i>
-            <span id="solo-usecase-chip-title">Use Case Title</span>
+        <!-- Stage: Shuffle / Deal / Vote -->
+        <div id="solo-stage-deal" class="h-full flex flex-col gap-3">
+          <div id="solo-deal-zone" class="flex-1 min-h-0 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 content-start pr-1">
+            <!-- Shuffle deck / player hand cards rendered by JS -->
+          </div>
+          <div id="solo-submit-vote-wrap" class="hidden flex justify-center shrink-0">
+            <button id="solo-submit-vote-btn" onclick="app.submitStandaloneVote()" disabled class="px-6 py-3 bg-navy hover:bg-navy-dark text-white font-bold rounded-xl text-sm shadow disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-2">
+              <i class="fa-solid fa-check"></i>
+              <span>Submit Top Picks (<span id="solo-selected-count">0</span>/4)</span>
+            </button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div id="solo-drop-yes" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'yes')" onclick="app.soloDrop(null,'yes')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-opp/40 bg-opp-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
-            <i class="fa-solid fa-circle-check text-2xl text-opp"></i>
-            <span class="text-xs font-black uppercase tracking-wider text-opp-dark">TO AI</span>
-            <span class="text-[10px] text-slate-500">Use AI, largely as-is</span>
+        <!-- Stage: Decision Board -->
+        <div id="solo-stage-decision" class="hidden h-full flex flex-col gap-3">
+          <div class="shrink-0">
+            <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">Top Picks for this Use Case</h3>
+            <div id="solo-selected-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
           </div>
-          <div id="solo-drop-no" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'no')" onclick="app.soloDrop(null,'no')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-risk/40 bg-risk-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
-            <i class="fa-solid fa-circle-xmark text-2xl text-risk"></i>
-            <span class="text-xs font-black uppercase tracking-wider text-risk-dark">NOT TO AI</span>
-            <span class="text-[10px] text-slate-500">Keep this fully human</span>
-          </div>
-          <div id="solo-drop-guard" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'guard')" onclick="app.soloDrop(null,'guard')" class="min-h-[120px] rounded-2xl border-2 border-dashed border-gold-amber/40 bg-amber-50 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
-            <i class="fa-solid fa-shield-halved text-2xl text-gold-amber"></i>
-            <span class="text-xs font-black uppercase tracking-wider text-amber-900">WITH GUARDRAILS</span>
-            <span class="text-[10px] text-slate-500">Use AI, with safeguards</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Session Decision Tracker -->
-      <div class="bg-white rounded-2xl border border-slate-200 card-shadow p-5 space-y-4">
-        <h3 class="text-sm font-bold text-navy uppercase tracking-wider">Session Decision Tracker</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-opp-light/30 border border-opp/30 rounded-xl p-3 space-y-2">
-            <span class="text-xs font-black uppercase tracking-wider text-opp-dark block">TO AI</span>
-            <div id="solo-tracker-col-yes" class="space-y-1.5 min-h-10"></div>
-          </div>
-          <div class="bg-risk-light/30 border border-risk/30 rounded-xl p-3 space-y-2">
-            <span class="text-xs font-black uppercase tracking-wider text-risk-dark block">NOT TO AI</span>
-            <div id="solo-tracker-col-no" class="space-y-1.5 min-h-10"></div>
-          </div>
-          <div class="bg-amber-50 border border-gold-amber/30 rounded-xl p-3 space-y-2">
-            <span class="text-xs font-black uppercase tracking-wider text-amber-900 block">WITH GUARDRAILS</span>
-            <div id="solo-tracker-col-guard" class="space-y-1.5 min-h-10"></div>
+          <div id="solo-decision-board" class="flex-1 min-h-0 bg-white rounded-2xl border border-slate-200 card-shadow p-4 sm:p-5 flex flex-col gap-3">
+            <h3 class="text-xs sm:text-sm font-bold text-navy uppercase tracking-wider text-center shrink-0">Drag the Use Case Card onto Your Decision</h3>
+
+            <div class="flex justify-center shrink-0">
+              <div id="solo-usecase-chip" draggable="true" ondragstart="app.soloDragStart(event)" class="cursor-grab active:cursor-grabbing px-5 py-2.5 bg-navy text-white rounded-xl font-bold text-xs sm:text-sm shadow-lg flex items-center space-x-2">
+                <i class="fa-solid fa-up-down-left-right"></i>
+                <span id="solo-usecase-chip-title">Use Case Title</span>
+              </div>
+            </div>
+
+            <div class="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div id="solo-drop-yes" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'yes')" onclick="app.soloDrop(null,'yes')" class="rounded-2xl border-2 border-dashed border-opp/40 bg-opp-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+                <i class="fa-solid fa-circle-check text-2xl text-opp"></i>
+                <span class="text-xs font-black uppercase tracking-wider text-opp-dark">TO AI</span>
+                <span class="text-[10px] text-slate-500">Use AI, largely as-is</span>
+              </div>
+              <div id="solo-drop-no" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'no')" onclick="app.soloDrop(null,'no')" class="rounded-2xl border-2 border-dashed border-risk/40 bg-risk-light/20 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+                <i class="fa-solid fa-circle-xmark text-2xl text-risk"></i>
+                <span class="text-xs font-black uppercase tracking-wider text-risk-dark">NOT TO AI</span>
+                <span class="text-[10px] text-slate-500">Keep this fully human</span>
+              </div>
+              <div id="solo-drop-guard" ondragover="app.soloDragOver(event)" ondragleave="app.soloDragLeave(event)" ondrop="app.soloDrop(event,'guard')" onclick="app.soloDrop(null,'guard')" class="rounded-2xl border-2 border-dashed border-gold-amber/40 bg-amber-50 p-4 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-1">
+                <i class="fa-solid fa-shield-halved text-2xl text-gold-amber"></i>
+                <span class="text-xs font-black uppercase tracking-wider text-amber-900">WITH GUARDRAILS</span>
+                <span class="text-[10px] text-slate-500">Use AI, with safeguards</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -952,6 +943,35 @@
       <p id="solo-export-subtitle" class="text-xs text-slate-500 mt-1"></p>
     </div>
     <div id="solo-export-rows" class="space-y-3"></div>
+  </div>
+
+  <!-- Standalone Mode: Decision Tracker Modal -->
+  <div id="modal-solo-tracker" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 card-shadow-lg border border-slate-200 max-h-[85vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-bold text-navy flex items-center space-x-2">
+          <i class="fa-solid fa-table-columns text-gold-amber"></i>
+          <span>Session Decision Tracker</span>
+        </h3>
+        <button onclick="app.hideStandaloneTracker()" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-opp-light/30 border border-opp/30 rounded-xl p-3 space-y-2">
+          <span class="text-xs font-black uppercase tracking-wider text-opp-dark block">TO AI</span>
+          <div id="solo-tracker-col-yes" class="space-y-1.5 min-h-10"></div>
+        </div>
+        <div class="bg-risk-light/30 border border-risk/30 rounded-xl p-3 space-y-2">
+          <span class="text-xs font-black uppercase tracking-wider text-risk-dark block">NOT TO AI</span>
+          <div id="solo-tracker-col-no" class="space-y-1.5 min-h-10"></div>
+        </div>
+        <div class="bg-amber-50 border border-gold-amber/30 rounded-xl p-3 space-y-2">
+          <span class="text-xs font-black uppercase tracking-wider text-amber-900 block">WITH GUARDRAILS</span>
+          <div id="solo-tracker-col-guard" class="space-y-1.5 min-h-10"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Standalone Mode: Guardrail Modal -->
@@ -2431,6 +2451,19 @@
         el.classList.add('flash-banner');
       }
 
+      setStandalonePhaseBadge(text) {
+        document.getElementById('solo-phase-badge').textContent = text;
+      }
+
+      showStandaloneTracker() {
+        this.renderStandaloneTracker();
+        document.getElementById('modal-solo-tracker').classList.remove('hidden');
+      }
+
+      hideStandaloneTracker() {
+        document.getElementById('modal-solo-tracker').classList.add('hidden');
+      }
+
       dealStandaloneHands() {
         const dataset = GAME_DATA[this.solo.edition];
         const riskPool = this.pickRandomN(dataset.risks, dataset.risks.length);
@@ -2457,10 +2490,11 @@
         document.getElementById('solo-usecase-title').textContent = currentCase.title;
         document.getElementById('solo-usecase-body').textContent = currentCase.body;
 
-        document.getElementById('solo-selected-summary').classList.add('hidden');
-        document.getElementById('solo-decision-board').classList.add('hidden');
+        document.getElementById('solo-stage-decision').classList.add('hidden');
+        document.getElementById('solo-stage-deal').classList.remove('hidden');
         document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
 
+        this.setStandalonePhaseBadge('Step 1: Shuffling');
         this.setStandaloneInstruction('Shuffling the deck...');
         this.dealStandaloneHands();
         this.playStandaloneShuffleAnimation();
@@ -2468,12 +2502,13 @@
 
       playStandaloneShuffleAnimation() {
         const zone = document.getElementById('solo-deal-zone');
-        zone.className = 'flex justify-center items-center py-10';
+        zone.className = 'flex-1 min-h-0 flex justify-center items-center';
         zone.innerHTML = Array.from({ length: 6 }).map((_, i) => `
           <div class="shuffle-deck-card w-16 h-24 -ml-8 first:ml-0 rounded-lg bg-navy border-2 border-white shadow-lg" style="animation-delay:${i * 0.05}s; z-index:${i}"></div>
         `).join('');
 
         setTimeout(() => {
+          this.setStandalonePhaseBadge('Step 2: Vote Top Picks');
           this.setStandaloneInstruction('Dealing cards to each player...');
           this.renderStandaloneHands();
         }, 900);
@@ -2481,7 +2516,7 @@
 
       renderStandaloneHands() {
         const zone = document.getElementById('solo-deal-zone');
-        zone.className = 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4';
+        zone.className = 'flex-1 min-h-0 overflow-y-auto custom-scrollbar grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 content-start pr-1';
 
         zone.innerHTML = this.solo.hands.map((hand, idx) => `
           <div class="deal-in bg-white rounded-xl border border-slate-200 card-shadow p-3 space-y-2" style="animation-delay:${idx * 0.12}s">
@@ -2544,7 +2579,6 @@
 
         this.solo.phase = 'decision';
         this.solo.pendingPicks = picks;
-        document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
 
         const summaryEl = document.getElementById('solo-selected-cards');
         summaryEl.innerHTML = picks.map(p => `
@@ -2554,13 +2588,15 @@
             <span class="block text-[10px] text-slate-500">Picked by ${p.playerName}</span>
           </div>
         `).join('');
-        document.getElementById('solo-selected-summary').classList.remove('hidden');
 
         const useCases = GAME_DATA[this.solo.edition].use_cases;
         const currentCase = useCases[this.solo.roundIndex % useCases.length];
         document.getElementById('solo-usecase-chip-title').textContent = currentCase.title;
-        document.getElementById('solo-decision-board').classList.remove('hidden');
 
+        document.getElementById('solo-stage-deal').classList.add('hidden');
+        document.getElementById('solo-stage-decision').classList.remove('hidden');
+
+        this.setStandalonePhaseBadge('Step 3: Decide');
         this.setStandaloneInstruction('Decide where you want to put this use case: drag it to a column!');
       }
 
@@ -2670,11 +2706,12 @@
 
         if (this.solo.roundIndex >= useCases.length) {
           this.showToast("Session complete! All use cases have been decided.", "success");
+          this.setStandalonePhaseBadge('Session Complete');
           this.setStandaloneInstruction("Session complete — great work! Export your notes sheet any time.");
           document.getElementById('solo-deal-zone').innerHTML = '';
           document.getElementById('solo-submit-vote-wrap').classList.add('hidden');
-          document.getElementById('solo-selected-summary').classList.add('hidden');
-          document.getElementById('solo-decision-board').classList.add('hidden');
+          document.getElementById('solo-stage-decision').classList.add('hidden');
+          document.getElementById('solo-stage-deal').classList.remove('hidden');
           return;
         }
 
