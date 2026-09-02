@@ -21,6 +21,7 @@ down afterward.
 - [How it works, in one page](#how-it-works-in-one-page)
 - [Play modes](#play-modes)
 - [Editions](#editions)
+- [Printable physical cards](#printable-physical-cards)
 - [Firebase setup](#firebase-setup)
 - [Firestore Security Rules explained](#firestore-security-rules-explained)
 - [Data retention (2-week auto-delete)](#data-retention-2-week-auto-delete)
@@ -90,6 +91,37 @@ static data — all Use Case, Risk, and Opportunity card text from the
 physical game, verbatim. The 3 Decision cards (TO AI / NOT TO AI / TO AI —
 WITH GUARDRAILS) are shared across editions. There's no in-app content
 editor by design — to change card text, edit `js/data.js` directly.
+
+## Printable physical cards
+
+The `print-cards/` folder generates print-ready individual card PDFs
+(front + back, one per page) that match the original physical deck's
+design — same page size (198.96 × 281.04 pt), same navy/red/green color
+scheme, same header-icon-and-category / title / body / footer layout, and
+a matching colored back reading "TO AI OR NOT TO AI?" with an edition
+pill (e.g. "STUDENT EDITION"). Only the 44 Use Case + Risk + Opportunity
+cards are included per edition — Decision cards aren't part of this deck,
+matching the original.
+
+`print-cards/output/student-cards.pdf` is a ready-to-print copy for the
+Student edition. To regenerate it (or make one for another edition) after
+changing card text in `js/data.js`, you'll need Node.js and Playwright's
+Chromium installed (`npm install playwright && npx playwright install
+chromium`), then run:
+
+```
+node print-cards/generate.mjs student "STUDENT EDITION" print-cards/output/student-cards.pdf
+node print-cards/generate.mjs teacher "TEACHER EDITION" print-cards/output/teacher-cards.pdf
+node print-cards/generate.mjs leadership "LEADERSHIP EDITION" print-cards/output/leadership-cards.pdf
+```
+
+This is a design tool for producing the printable deck — it's unrelated to
+the deployed web game and Playwright isn't a dependency of the site
+itself. `print-cards/icons.mjs` holds the small set of simple line icons
+used on card headers; it maps keywords in each card's title to an icon,
+falling back to a generic one per card type (document / warning /
+lightbulb) when nothing matches — exact icon-matching to the original art
+was never the goal, just a clean, consistent look per the project brief.
 
 ## Firebase setup
 
