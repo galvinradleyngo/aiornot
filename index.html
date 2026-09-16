@@ -52,7 +52,8 @@
   }
   .app-header h1{font-size:1.15rem;font-weight:600;letter-spacing:.2px;}
   .app-header .subtitle{font-size:.82rem;color:#c9d6e6;margin-top:2px;}
-  .header-titles{display:flex;flex-direction:column;}
+  .header-left{display:flex;align-items:center;gap:12px;min-width:0;}
+  .header-titles{display:flex;flex-direction:column;min-width:0;}
   .btn-ghost{
     background:transparent;
     border:1px solid rgba(255,255,255,.5);
@@ -64,6 +65,98 @@
     white-space:nowrap;
   }
   .btn-ghost:hover{background:rgba(255,255,255,.12);}
+  .sidebar-toggle-btn{
+    background:transparent;
+    border:1px solid rgba(255,255,255,.5);
+    color:#fff;
+    width:36px;height:36px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.05rem;
+    flex-shrink:0;
+  }
+  .sidebar-toggle-btn:hover{background:rgba(255,255,255,.12);}
+
+  /* ---------- Sidebar (review snapshot) ---------- */
+  .app-body{display:flex;align-items:flex-start;flex:1;width:100%;}
+  .sidebar{
+    background:#fff;
+    overflow-y:auto;
+    overflow-x:hidden;
+    flex-shrink:0;
+    transition:width .22s ease,transform .22s ease;
+  }
+  .sidebar-inner{width:280px;padding:20px;}
+  @media (max-width:880px){
+    .sidebar{
+      position:fixed;
+      top:0;left:0;bottom:0;
+      width:280px;
+      transform:translateX(-100%);
+      z-index:45;
+      box-shadow:0 10px 40px rgba(0,0,0,.2);
+      border-right:1px solid var(--border);
+    }
+    .sidebar.open{transform:translateX(0);}
+  }
+  @media (min-width:881px){
+    .sidebar{
+      position:sticky;
+      width:0;
+      border-right:1px solid var(--border);
+    }
+    .sidebar.open{width:280px;}
+  }
+  .sidebar-scrim{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(15,23,35,.4);
+    z-index:40;
+  }
+  .sidebar-scrim.show{display:block;}
+  @media (min-width:881px){ .sidebar-scrim{display:none !important;} }
+  .sidebar-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:14px;margin-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-kicker{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+  .sidebar-close{display:none;background:none;border:none;font-size:1.3rem;line-height:1;color:var(--muted);cursor:pointer;padding:2px 6px;}
+  @media (max-width:880px){ .sidebar-close{display:block;} }
+  .sidebar-block{margin-bottom:22px;}
+  .sidebar-block:last-child{margin-bottom:0;}
+  .sidebar-label{display:block;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:8px;}
+  .sidebar-usecase{
+    display:block;width:100%;text-align:left;
+    font-size:.83rem;color:var(--ink);line-height:1.4;
+    background:var(--bg);border:1px solid var(--border);border-radius:8px;
+    padding:10px 12px;cursor:pointer;font-family:inherit;
+  }
+  .sidebar-usecase:hover{border-color:var(--navy);}
+  .sidebar-empty{font-size:.82rem;color:var(--muted);font-style:italic;}
+  .sidebar-list{display:flex;flex-direction:column;gap:6px;}
+  .sidebar-item{
+    display:flex;align-items:center;gap:8px;
+    width:100%;text-align:left;font-family:inherit;
+    background:#fff;border:1px solid var(--border);border-left:3px solid var(--border);
+    border-radius:6px;padding:6px 10px;
+    font-size:.82rem;color:var(--ink);cursor:pointer;
+  }
+  .sidebar-item.risk{border-left-color:var(--risk);}
+  .sidebar-item.opp{border-left-color:var(--opp);}
+  .sidebar-item:hover{background:var(--bg);}
+  .sidebar-badge{flex-shrink:0;font-size:.6rem;padding:1px 7px;}
+  .sidebar-item-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sidebar-decision-chip{
+    display:block;width:100%;text-align:left;font-family:inherit;
+    padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+    font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);
+  }
+  .sidebar-decision-chip.to-ai{border-color:var(--navy);background:var(--navy-light);color:var(--navy);}
+  .sidebar-decision-chip.not-ai{border-color:#4b5563;background:#f1f2f4;color:#374151;}
+  .sidebar-decision-chip.guardrails{border-color:var(--gold);background:var(--gold-light);color:#725817;}
+  .sidebar-guardrail{margin-top:8px;font-size:.8rem;color:var(--muted);line-height:1.4;}
 
   /* ---------- Progress ---------- */
   .progress-wrap{
@@ -119,6 +212,7 @@
   /* ---------- Main ---------- */
   .step-container{
     flex:1;
+    min-width:0;
     max-width:900px;
     width:100%;
     margin:0 auto;
@@ -415,16 +509,25 @@
   <div id="toast" class="toast" hidden></div>
 
   <header class="app-header no-print">
-    <div class="header-titles">
-      <h1>AI Use Case Review Worksheet</h1>
-      <span class="subtitle">Think it through before you decide to AI, not to AI, or AI with guardrails.</span>
+    <div class="header-left">
+      <button class="sidebar-toggle-btn" id="sidebarToggle" type="button" aria-label="Toggle review snapshot" aria-expanded="false">&#9776;</button>
+      <div class="header-titles">
+        <h1>AI Use Case Review Worksheet</h1>
+        <span class="subtitle">Think it through before you decide to AI, not to AI, or AI with guardrails.</span>
+      </div>
     </div>
     <button class="btn-ghost" id="headerResetBtn" type="button">Start New Review</button>
   </header>
 
   <div class="progress-wrap no-print" id="progressWrap"></div>
 
-  <main class="step-container" id="stepContainer"></main>
+  <div class="app-body">
+    <div class="sidebar-scrim no-print" id="sidebarScrim"></div>
+    <aside class="sidebar no-print" id="sidebar">
+      <div class="sidebar-inner" id="sidebarInner"></div>
+    </aside>
+    <main class="step-container" id="stepContainer"></main>
+  </div>
 
   <footer class="wizard-footer no-print">
     <div class="wizard-footer-inner">
@@ -589,6 +692,11 @@
   var backBtn = document.getElementById("backBtn");
   var nextBtn = document.getElementById("nextBtn");
   var validationMsg = document.getElementById("validationMsg");
+  var sidebar = document.getElementById("sidebar");
+  var sidebarInner = document.getElementById("sidebarInner");
+  var sidebarToggle = document.getElementById("sidebarToggle");
+  var sidebarScrim = document.getElementById("sidebarScrim");
+  var sidebarOpen = (typeof window === "undefined") ? true : window.innerWidth >= 881;
 
   function renderProgress(){
     var fillPct = ((state.step-1)/4*100);
@@ -601,6 +709,130 @@
       '<div class="progress-track"><div class="progress-fill" style="width:'+fillPct+'%"></div></div>'+
       '<div class="progress-steps">'+stepsHtml+'</div>';
   }
+
+  function sidebarMiniList(kindClass, storeKey, list, emptyText, jumpStep){
+    var flagged = list.filter(function(item){ return state[storeKey][item.n].applies; });
+    if(flagged.length === 0){
+      return '<p class="sidebar-empty">'+emptyText+'</p>';
+    }
+    flagged = flagged.slice().sort(function(a,b){
+      return ratingRank(state[storeKey][a.n].rating) - ratingRank(state[storeKey][b.n].rating);
+    });
+    var itemsHtml = flagged.map(function(item){
+      var st = state[storeKey][item.n];
+      var badgeCls = st.rating === "High" ? "high" : st.rating === "Med" ? "med" : "low";
+      return (
+        '<button type="button" class="sidebar-item '+kindClass+'" data-jump-step="'+jumpStep+'">'+
+          '<span class="badge '+badgeCls+' sidebar-badge">'+(st.rating || "—")+'</span>'+
+          '<span class="sidebar-item-title">'+escapeHtml(item.title)+'</span>'+
+        '</button>'
+      );
+    }).join("");
+    return '<div class="sidebar-list">'+itemsHtml+'</div>';
+  }
+
+  function renderSidebar(){
+    var risksFlaggedCount = RISKS.filter(function(r){ return state.risks[r.n].applies; }).length;
+    var oppsFlaggedCount = OPPORTUNITIES.filter(function(o){ return state.opportunities[o.n].applies; }).length;
+
+    var useCaseHtml = state.useCase.trim()
+      ? escapeHtml(state.useCase.trim())
+      : '<span class="sidebar-empty">Not described yet — tap to add it</span>';
+
+    var decisionHtml;
+    if(state.decisionIndex !== null){
+      var decision = DECISIONS[state.decisionIndex];
+      var guardrailHtml = "";
+      if(isGuardrailIndex(state.decisionIndex) && state.guardrail.trim()){
+        guardrailHtml = '<p class="sidebar-guardrail">'+escapeHtml(state.guardrail.trim())+'</p>';
+      }
+      decisionHtml =
+        '<button type="button" class="sidebar-decision-chip '+decision.cls+'" data-jump-step="4">'+escapeHtml(decision.title)+'</button>'+
+        guardrailHtml;
+    } else {
+      decisionHtml = '<button type="button" class="sidebar-usecase" data-jump-step="4"><span class="sidebar-empty">Not decided yet — tap to decide</span></button>';
+    }
+
+    return (
+      '<div class="sidebar-header">'+
+        '<span class="sidebar-kicker">Review Snapshot</span>'+
+        '<button type="button" class="sidebar-close" id="sidebarClose" aria-label="Close review snapshot">&times;</button>'+
+      '</div>'+
+      '<div class="sidebar-block">'+
+        '<label class="sidebar-label">Use Case</label>'+
+        '<button type="button" class="sidebar-usecase" data-jump-step="1">'+useCaseHtml+'</button>'+
+      '</div>'+
+      '<div class="sidebar-block">'+
+        '<label class="sidebar-label">Risks Flagged ('+risksFlaggedCount+'/'+RISKS.length+')</label>'+
+        sidebarMiniList("risk","risks",RISKS,"No risks flagged yet",2)+
+      '</div>'+
+      '<div class="sidebar-block">'+
+        '<label class="sidebar-label">Opportunities Flagged ('+oppsFlaggedCount+'/'+OPPORTUNITIES.length+')</label>'+
+        sidebarMiniList("opp","opportunities",OPPORTUNITIES,"No opportunities flagged yet",3)+
+      '</div>'+
+      '<div class="sidebar-block">'+
+        '<label class="sidebar-label">Decision</label>'+
+        decisionHtml+
+      '</div>'
+    );
+  }
+
+  function refreshSidebar(){
+    sidebarInner.innerHTML = renderSidebar();
+  }
+
+  function syncSidebarOffset(){
+    if(window.innerWidth >= 881){
+      var h = progressWrap.offsetHeight;
+      sidebar.style.top = h + "px";
+      sidebar.style.maxHeight = "calc(100vh - " + h + "px)";
+    } else {
+      sidebar.style.top = "";
+      sidebar.style.maxHeight = "";
+    }
+  }
+
+  function applySidebarState(){
+    if(sidebarOpen){
+      sidebar.classList.add("open");
+      sidebarScrim.classList.toggle("show", window.innerWidth <= 880);
+      sidebarToggle.setAttribute("aria-expanded","true");
+    } else {
+      sidebar.classList.remove("open");
+      sidebarScrim.classList.remove("show");
+      sidebarToggle.setAttribute("aria-expanded","false");
+    }
+    syncSidebarOffset();
+  }
+
+  sidebarToggle.addEventListener("click", function(){
+    sidebarOpen = !sidebarOpen;
+    applySidebarState();
+  });
+  sidebarScrim.addEventListener("click", function(){
+    sidebarOpen = false;
+    applySidebarState();
+  });
+  window.addEventListener("resize", syncSidebarOffset);
+
+  sidebarInner.addEventListener("click", function(e){
+    if(e.target.id === "sidebarClose"){
+      sidebarOpen = false;
+      applySidebarState();
+      return;
+    }
+    var jumpEl = e.target.closest("[data-jump-step]");
+    if(jumpEl){
+      var targetStep = parseInt(jumpEl.dataset.jumpStep, 10);
+      state.step = targetStep;
+      renderAll();
+      scrollTop();
+      if(window.innerWidth <= 880){
+        sidebarOpen = false;
+        applySidebarState();
+      }
+    }
+  });
 
   function itemCard(storeKey, item){
     var st = state[storeKey][item.n];
@@ -844,6 +1076,8 @@
     renderProgress();
     renderStep();
     updateFooter();
+    refreshSidebar();
+    syncSidebarOffset();
   }
 
   function scrollTop(){
@@ -904,12 +1138,14 @@
     if(t.id === "useCaseText"){
       state.useCase = t.value;
       if(state.useCase.trim().length > 0) validationMsg.textContent = "";
+      refreshSidebar();
       saveDraftDebounced();
       return;
     }
     if(t.id === "guardrailText"){
       state.guardrail = t.value;
       if(state.guardrail.trim().length > 0) validationMsg.textContent = "";
+      refreshSidebar();
       saveDraftDebounced();
       return;
     }
@@ -929,12 +1165,14 @@
       item.applies = t.checked;
       if(item.applies && !item.rating) item.rating = "Med";
       renderStep();
+      refreshSidebar();
       saveDraft();
       return;
     }
     if(t.dataset && t.dataset.field === "rating"){
       var store2 = state[t.dataset.kind];
       store2[t.dataset.n].rating = t.value;
+      refreshSidebar();
       saveDraft();
       return;
     }
@@ -950,6 +1188,7 @@
     if(!isGuardrailIndex(idx)) state.guardrail = "";
     validationMsg.textContent = "";
     renderStep();
+    refreshSidebar();
     saveDraft();
   }
 
@@ -1060,6 +1299,7 @@
       state = saved || defaultState();
     }
     renderAll();
+    applySidebarState();
   }
 
   init();
