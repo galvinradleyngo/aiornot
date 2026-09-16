@@ -1,10 +1,18 @@
-# AI Use Case Review Worksheet
+# AI or Not
+
+Two standalone, single-file HTML tools for thinking through where AI belongs. Each opens directly in a browser — no build step, no server, no accounts.
+
+## `drawing-the-line.html` — Drawing the Line
+
+A playful, notebook-styled prototype for capturing where someone draws the line on AI use, task by task. Add tasks (or use the example set), then drag each one onto a hand-drawn line running from "No AI" to "Full AI" — the further right, the more AI involvement that task calls for. Placed tasks line up underneath the line in swimlanes with connecting stems, a live histogram shows the overall spread, and you can copy a plain-text summary or print/save a PDF. Layout adapts from desktop down to phone width, and dragging works with both mouse and touch (pointer events). Progress is saved to `localStorage`.
+
+## `index.html` — AI Use Case Review Worksheet
 
 An interactive, browser-based version of the printable "AI Use Case Review Worksheet." It walks one reviewer (or a small team sitting together) through a single real AI use case — 14 Risk concepts, 12 Opportunity concepts, and a three-way decision (To AI / Not To AI / To AI With Guardrails) — and automatically produces a clean, finished report at the end instead of a re-typed handwritten checklist.
 
-This is a **single-user tool**: no accounts, no login, no server, no database. Everything runs entirely in your browser.
+Both tools are **single-user**: no accounts, no login, no server, no database. Everything runs entirely in your browser.
 
-## What it does
+## AI Use Case Review Worksheet — how it works
 
 A guided, 5-step wizard with a visible progress bar and Back/Next navigation:
 
@@ -20,10 +28,10 @@ From the report you can:
 
 Your progress is saved automatically to your browser's `localStorage`. If you close the tab or refresh mid-review, reopening the page offers to resume where you left off or start fresh. "Start New Review" (available at any time) clears everything. Nothing is stored beyond the single review in progress — there's no in-app history of past reviews.
 
-## How to open it
+## How to open them
 
-Just open `index.html` directly in any modern web browser (double-click it, or `File > Open`). No build step, no install, no internet connection required.
+Just open `drawing-the-line.html` or `index.html` directly in any modern web browser (double-click it, or `File > Open`). No build step, no install required. `drawing-the-line.html` loads two Google Fonts for its handwritten look but falls back to system cursive/handwriting fonts if there's no internet connection; `index.html` needs no internet at all.
 
-## How to host it
+## How to host them
 
-Because it's a single self-contained static HTML file, you can host it anywhere that serves static files — GitHub Pages, Netlify, a plain web server, an internal file share, etc. Just upload `index.html`.
+Because they're self-contained static HTML files, you can host them anywhere that serves static files — GitHub Pages, Netlify, a plain web server, an internal file share, etc. Just upload the `.html` file(s) you want.

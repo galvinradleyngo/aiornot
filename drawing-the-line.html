@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Drawing the Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbf6e8;
+    --paper-card:#fffdf6;
+    --rule:#dfe6f7;
+    --margin:#f2c3cd;
+    --ink:#2b2b33;
+    --muted:#75705f;
+    --pencil:#a39d89;
+    --human:#3b6dd1;
+    --mid:#8a5cd6;
+    --ai:#d6417f;
+    --highlight:#ffd966;
+    --border:#e4dcc4;
+    --radius:14px;
+    --shadow:0 6px 0 rgba(43,43,51,.05),0 10px 24px rgba(88,74,44,.12);
+    --font-hand:'Kalam','Comic Sans MS','Segoe Print',cursive;
+    --font-title:'Caveat','Segoe Print','Comic Sans MS',cursive;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:var(--font-hand);
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 42px, var(--margin) 42px, var(--margin) 44px, transparent 44px),
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 30px;
+    background-attachment: local, local;
+    color:var(--ink);
+    line-height:1.5;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{line-height:1.15;margin:0 0 .3em;font-family:var(--font-title);}
+  p{margin:0 0 .5em;}
+  button{font-family:inherit;}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:820px;margin:0 auto;padding:30px 18px 80px;}
+  .card{
+    background:var(--paper-card);
+    border-radius:16px 14px 18px 12px/12px 18px 14px 16px;
+    border:2px solid var(--border);
+    box-shadow:var(--shadow);
+    padding:20px 22px;
+    margin-bottom:24px;
+    position:relative;
+  }
+
+  /* ---------- Header ---------- */
+  header.hero{text-align:center;padding:6px 10px 30px;position:relative;}
+  header.hero h1{
+    font-size:clamp(2.4rem,8vw,3.6rem);
+    font-weight:700;
+    color:var(--ink);
+    display:inline-block;
+    position:relative;
+    transform:rotate(-1.2deg);
+  }
+  .title-tape{
+    position:absolute;top:-6px;left:50%;transform:translateX(-50%) rotate(-3deg);
+    width:110px;height:26px;
+    background:repeating-linear-gradient(45deg,#fff2a8,#fff2a8 6px,#ffe9a0 6px,#ffe9a0 12px);
+    opacity:.85;box-shadow:0 2px 4px rgba(0,0,0,.08);
+  }
+  .title-underline{display:block;margin:0 auto;width:min(320px,80%);}
+  header.hero .tagline{
+    color:var(--muted);font-size:1.05rem;max-width:520px;margin:6px auto 0;
+    font-family:var(--font-hand);
+  }
+
+  /* ---------- Add panel ---------- */
+  #addForm{display:flex;gap:10px;flex-wrap:wrap;}
+  #taskInput{
+    flex:1;min-width:180px;
+    padding:12px 14px;border:2px solid var(--border);border-radius:10px 14px 10px 14px;
+    font-size:1.05rem;background:#fffef9;color:var(--ink);font-family:var(--font-hand);
+  }
+  #taskInput::placeholder{color:#b3ab90;}
+  #taskInput:focus{outline:none;border-color:var(--mid);box-shadow:0 0 0 3px rgba(138,92,214,.15);}
+  .btn{
+    padding:11px 18px;
+    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    border:2px solid var(--ink);cursor:pointer;
+    font-size:1rem;font-weight:700;white-space:nowrap;
+    font-family:var(--font-hand);
+    transition:transform .12s ease;
+  }
+  .btn:hover{transform:rotate(-1deg) translateY(-1px);}
+  .btn:active{transform:rotate(0) translateY(1px);}
+  .btn-add{background:var(--highlight);color:#3b2e05;}
+  .link-row{margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .link-btn{
+    background:none;border:2px dashed var(--pencil);color:var(--mid);
+    font-weight:700;font-size:.92rem;padding:7px 14px;
+    border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+    cursor:pointer;font-family:var(--font-hand);
+  }
+  .link-btn:hover{background:#faf5ff;border-color:var(--mid);}
+
+  /* ---------- Tray ---------- */
+  #traySection h2{font-size:1.15rem;display:flex;align-items:center;gap:8px;}
+  .count{
+    background:var(--ink);color:#fff;font-size:.72rem;font-weight:800;
+    padding:1px 9px;border-radius:99px;font-family:var(--font-hand);
+  }
+  .hint{font-size:.9rem;color:var(--muted);margin-bottom:12px;}
+  .tray-list{display:flex;flex-wrap:wrap;gap:12px;min-height:48px;}
+  .tray-empty{font-size:.95rem;color:var(--muted);font-style:italic;padding:8px 2px;}
+
+  /* ---------- Chips (sticky notes) ---------- */
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--chip-bg,#fff3b0);
+    border:2px solid var(--ink);
+    border-radius:3px 10px 4px 9px/9px 4px 10px 3px;
+    padding:7px 8px 7px 12px;
+    font-size:.95rem;font-weight:700;color:var(--ink);
+    font-family:var(--font-hand);
+    cursor:grab;touch-action:none;user-select:none;
+    box-shadow:2px 3px 0 rgba(43,43,51,.15);
+    animation:pop .22s ease;
+    max-width:100%;
+    transform:rotate(var(--chip-rot,0deg));
+  }
+  .chip .emo{font-size:1.05rem;flex-shrink:0;}
+  .chip .txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .chip .chip-remove{
+    flex-shrink:0;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--ink);
+    background:#fff;color:var(--ink);font-size:.75rem;line-height:1;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .chip .chip-remove:hover{background:var(--ai);color:#fff;border-color:var(--ai);}
+  .chip.dragging{
+    cursor:grabbing;opacity:.97;box-shadow:4px 8px 18px rgba(43,43,51,.3);
+    transform:scale(1.05) rotate(-2deg);z-index:1000;
+  }
+  .chip:focus-visible{outline:3px solid var(--mid);outline-offset:2px;}
+  @keyframes pop{from{transform:scale(.7) rotate(0);opacity:0;}to{transform:scale(1) rotate(var(--chip-rot,0deg));opacity:1;}}
+
+  /* ---------- The line ---------- */
+  .line-card{position:relative;}
+  .line-endpoints{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .endpoint{font-size:.95rem;font-weight:700;text-align:center;line-height:1.3;font-family:var(--font-hand);}
+  .endpoint.left{color:var(--human);}
+  .endpoint.right{color:var(--ai);text-align:right;}
+  .endpoint small{display:block;font-weight:400;color:var(--muted);font-size:.8rem;}
+
+  .track-wrap{position:relative;padding-top:10px;border-radius:14px;transition:background .15s ease;}
+  .track-wrap.drop-hover{background:rgba(138,92,214,.07);}
+  .track{position:relative;height:42px;}
+  .track svg{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
+  .track-tick{
+    position:absolute;bottom:2px;width:2px;height:12px;background:var(--pencil);opacity:.6;
+  }
+  .track-dot{
+    position:absolute;top:50%;width:20px;height:20px;border-radius:60% 40% 55% 45%/45% 55% 40% 60%;
+    background:var(--dot-c,var(--mid));border:2px solid var(--ink);
+    transform:translate(-50%,-50%);box-shadow:1px 2px 0 rgba(43,43,51,.2);
+    transition:left .18s ease;
+  }
+  .track-dot.pulse{animation:dotpop .5s ease;}
+  @keyframes dotpop{
+    0%{transform:translate(-50%,-50%) scale(0.3);}
+    60%{transform:translate(-50%,-50%) scale(1.5);}
+    100%{transform:translate(-50%,-50%) scale(1);}
+  }
+  .ghost-guide{
+    position:absolute;top:-4px;width:2px;bottom:-8px;background:var(--mid);
+    opacity:0;pointer-events:none;transition:opacity .1s ease;border-radius:2px;
+  }
+  .ghost-guide.show{opacity:.6;}
+  .ghost-label{
+    position:absolute;top:-36px;transform:translateX(-50%) rotate(-2deg);
+    background:var(--ink);color:#fff;font-size:.82rem;font-weight:700;
+    padding:4px 10px;border-radius:8px 8px 8px 2px;white-space:nowrap;opacity:0;pointer-events:none;
+    transition:opacity .1s ease;font-family:var(--font-hand);
+  }
+  .ghost-label.show{opacity:1;}
+
+  .band-labels{
+    display:flex;justify-content:space-between;margin-top:10px;
+    font-size:.75rem;color:var(--muted);font-weight:700;font-family:var(--font-hand);
+  }
+  .band-labels span{flex:1;text-align:center;}
+  .band-labels span:first-child{text-align:left;}
+  .band-labels span:last-child{text-align:right;}
+  @media (max-width:480px){ .band-labels span:not(:first-child):not(:last-child){display:none;} }
+
+  .lanes{position:relative;margin-top:18px;min-height:8px;}
+  .stem{position:absolute;width:2px;background:var(--pencil);top:-16px;opacity:.7;}
+  .placed-chip{position:absolute;top:0;}
+  .lanes-empty{font-size:.9rem;color:var(--muted);font-style:italic;text-align:center;padding:10px 0 2px;}
+
+  /* ---------- Confetti ---------- */
+  .confetti-bit{
+    position:fixed;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:2000;
+    animation:confetti .7s ease-out forwards;
+  }
+  @keyframes confetti{
+    to{ transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); opacity:0; }
+  }
+
+  /* ---------- Stats ---------- */
+  .stats{display:flex;flex-wrap:wrap;gap:20px;align-items:center;}
+  .stat{display:flex;flex-direction:column;min-width:100px;}
+  .stat strong{font-size:1.6rem;color:var(--ink);font-family:var(--font-title);}
+  .stat span{font-size:.78rem;color:var(--muted);font-weight:700;font-family:var(--font-hand);}
+  .histogram{flex:1;min-width:180px;display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--border);border:2px solid var(--ink);}
+  .histogram .seg{transition:flex-grow .2s ease;}
+  .stat-actions{width:100%;display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .btn-outline{background:#fff;border:2px solid var(--ink);color:var(--ink);}
+  .btn-outline:hover{background:#f3eeda;}
+  .btn-danger{background:#fff;border:2px solid var(--ai);color:var(--ai);}
+  .btn-danger:hover{background:#fff0f5;}
+
+  footer.foot{text-align:center;color:var(--muted);font-size:.85rem;padding:10px 0 30px;font-family:var(--font-hand);}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) rotate(-1deg);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px 10px 10px 2px;
+    font-size:.92rem;z-index:3000;box-shadow:0 8px 24px rgba(0,0,0,.25);
+    display:flex;align-items:center;gap:12px;font-family:var(--font-hand);
+  }
+  .toast button{background:none;border:none;color:#ffe9a0;font-weight:700;cursor:pointer;font-size:.9rem;}
+  [hidden]{display:none !important;}
+
+  body.dragging-active{cursor:grabbing;}
+  body.dragging-active *{cursor:grabbing !important;}
+
+  @media print{
+    .no-print{display:none !important;}
+    body{background:#fff;}
+    .card{box-shadow:none;border:1.5px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="title-tape no-print"></div>
+    <h1>Drawing the Line ✏️</h1>
+    <svg class="title-underline no-print" viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M4,10 Q40,2 80,10 T160,8 T240,12 T296,7" fill="none" stroke="#d6417f" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <p class="tagline">Add tasks, then drag each one onto the line below — the further right, the more you'd lean on AI to do it.</p>
+  </header>
+
+  <section class="card no-print">
+    <form id="addForm">
+      <input id="taskInput" type="text" maxlength="140" placeholder="Add a task… e.g. &quot;Writing a cover letter&quot;" autocomplete="off">
+      <button type="submit" class="btn btn-add">+ Add task</button>
+    </form>
+    <div class="link-row">
+      <button type="button" id="addExamplesBtn" class="link-btn">✨ Add example tasks</button>
+    </div>
+  </section>
+
+  <section class="card" id="traySection">
+    <h2>Unplaced tasks <span class="count" id="trayCount">0</span></h2>
+    <p class="hint">🫳 Drag a task down onto the line — or tap it to drop it in the middle, then fine-tune.</p>
+    <div class="tray-list" id="tray"></div>
+  </section>
+
+  <section class="card line-card">
+    <div class="line-endpoints">
+      <span class="endpoint left">🙅 No AI<br><small>Fully human</small></span>
+      <span class="endpoint right">🤖 Full AI<br><small>Fully automated</small></span>
+    </div>
+    <div class="track-wrap" id="trackWrap">
+      <div class="track" id="track">
+        <svg viewBox="0 0 600 40" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="inkGrad" gradientUnits="userSpaceOnUse" x1="6" y1="20" x2="594" y2="20">
+              <stop offset="0%" stop-color="#3b6dd1"/>
+              <stop offset="50%" stop-color="#8a5cd6"/>
+              <stop offset="100%" stop-color="#d6417f"/>
+            </linearGradient>
+            <filter id="sketchy" filterUnits="userSpaceOnUse" x="-20" y="-20" width="640" height="80">
+              <feTurbulence type="fractalNoise" baseFrequency="0.012 1" numOctaves="2" seed="7" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+          </defs>
+          <line x1="6" y1="20" x2="594" y2="20" stroke="url(#inkGrad)" stroke-width="5" stroke-linecap="round" filter="url(#sketchy)"/>
+        </svg>
+        <div class="track-tick" style="left:20%;transform:rotate(-4deg)"></div>
+        <div class="track-tick" style="left:40%;transform:rotate(3deg)"></div>
+        <div class="track-tick" style="left:60%;transform:rotate(-3deg)"></div>
+        <div class="track-tick" style="left:80%;transform:rotate(4deg)"></div>
+        <div class="ghost-guide" id="ghostGuide"></div>
+        <div class="ghost-label" id="ghostLabel"></div>
+      </div>
+      <div class="lanes" id="lanes"></div>
+    </div>
+    <div class="band-labels">
+      <span>Fully human</span><span>AI-assisted</span><span>Balanced</span><span>AI-led</span><span>Fully AI</span>
+    </div>
+  </section>
+
+  <section class="card stats no-print">
+    <div class="stat"><strong id="statTotal">0</strong><span>placed</span></div>
+    <div class="stat"><strong id="statAvg">–</strong><span>average lean</span></div>
+    <div class="histogram" id="histogram"></div>
+    <div class="stat-actions">
+      <button class="btn btn-outline" id="copyBtn" type="button">📋 Copy summary</button>
+      <button class="btn btn-outline" id="printBtn" type="button">🖨️ Print / Save PDF</button>
+      <button class="btn btn-danger" id="resetBtn" type="button">Reset all</button>
+    </div>
+  </section>
+
+  <footer class="foot no-print">Everything here stays in your browser (localStorage) — nothing is uploaded anywhere.</footer>
+</div>
+
+<div id="toast" class="toast no-print" hidden></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "drawingTheLine_v1";
+  var CHIP_H = 34, ROW_STEP = 44, LANE_GAP = 12;
+
+  var BANDS = [
+    {min:0,  max:20, label:"Fully human"},
+    {min:20, max:40, label:"Human-led, AI-assisted"},
+    {min:40, max:60, label:"Balanced"},
+    {min:60, max:80, label:"AI-led, human-reviewed"},
+    {min:80, max:100,label:"Fully AI"}
+  ];
+  var BAND_COLORS = ["#3b6dd1","#7568d6","#8a5cd6","#b6489f","#d6417f"];
+  var NOTE_COLORS = ["#fff3b0","#ffd7e6","#c9f0d8","#cfe3ff","#ffe0bf","#e3d4ff"];
+
+  var EMOJIS = ["📝","💡","🛠️","📬","🎨","🩺","⚖️","🎓","🧾","🎮","🧩","🔬","🎤","🍳","🚀","📊","🧵","🗣️"];
+
+  var EXAMPLES = [
+    "Writing a first draft of an email",
+    "Diagnosing a medical condition",
+    "Grading student essays",
+    "Drafting a legal contract",
+    "Debugging a piece of code",
+    "Making a hiring decision",
+    "Writing a birthday message to a friend",
+    "Summarizing a long report",
+    "Creating marketing artwork",
+    "Tutoring a student one-on-one",
+    "Writing a eulogy",
+    "Scheduling a meeting"
+  ];
+
+  var tasks = [];
+  var drag = null; // {id, el, offsetX, offsetY, moved, startX, startY}
+
+  // ---------------- Storage ----------------
+
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }catch(e){}
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return [];
+      var parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed)) return [];
+      return parsed.filter(function(t){ return t && typeof t.id === "string" && typeof t.text === "string"; })
+        .map(function(t){
+          return {
+            id: t.id,
+            text: t.text,
+            placed: !!t.placed,
+            pos: (typeof t.pos === "number" && t.pos >= 0 && t.pos <= 100) ? t.pos : null
+          };
+        });
+    }catch(e){ return []; }
+  }
+
+  function genId(){ return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  function hashStr(str){
+    var h = 0;
+    for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) | 0; }
+    return Math.abs(h);
+  }
+  function emojiFor(task){ return EMOJIS[hashStr(task.id) % EMOJIS.length]; }
+  function noteColorFor(task){ return NOTE_COLORS[hashStr(task.id) % NOTE_COLORS.length]; }
+  function rotFor(task){ return (hashStr(task.id) % 7) - 3 + "deg"; }
+  function dotColorFor(task){ return BAND_COLORS[hashStr(task.id) % BAND_COLORS.length]; }
+
+  function escapeHtml(str){
+    return String(str==null?"":str).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function bandFor(pos){
+    var idx = Math.min(4, Math.floor(pos/20));
+    return BANDS[idx];
+  }
+
+  function estimateWidth(text){
+    var len = text.length;
+    return Math.max(90, Math.min(220, len*6.5+56));
+  }
+
+  // ---------------- DOM refs ----------------
+
+  var tray = document.getElementById("tray");
+  var trayCount = document.getElementById("trayCount");
+  var track = document.getElementById("track");
+  var trackWrap = document.getElementById("trackWrap");
+  var lanes = document.getElementById("lanes");
+  var ghostGuide = document.getElementById("ghostGuide");
+  var ghostLabel = document.getElementById("ghostLabel");
+  var statTotal = document.getElementById("statTotal");
+  var statAvg = document.getElementById("statAvg");
+  var histogram = document.getElementById("histogram");
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+
+  // ---------------- Chip HTML ----------------
+
+  function chipHtml(task){
+    return (
+      '<div class="chip" data-id="'+task.id+'" tabindex="0" style="--chip-bg:'+noteColorFor(task)+';--chip-rot:'+rotFor(task)+'" role="button" aria-label="'+escapeHtml(task.text)+', draggable task">'+
+        '<span class="emo">'+emojiFor(task)+'</span>'+
+        '<span class="txt">'+escapeHtml(task.text)+'</span>'+
+        '<button type="button" class="chip-remove" data-remove="'+task.id+'" aria-label="Remove task">&times;</button>'+
+      '</div>'
+    );
+  }
+
+  // ---------------- Rendering ----------------
+
+  function renderTray(){
+    var unplaced = tasks.filter(function(t){ return !t.placed; });
+    trayCount.textContent = unplaced.length;
+    if(unplaced.length === 0){
+      tray.innerHTML = tasks.length === 0
+        ? '<p class="tray-empty">No tasks yet — add one above, or try the examples ✨</p>'
+        : '<p class="tray-empty">All tasks are placed on the line 🎉</p>';
+      return;
+    }
+    tray.innerHTML = unplaced.map(chipHtml).join("");
+  }
+
+  function renderTrackDots(){
+    var existing = track.querySelectorAll(".track-dot");
+    for(var i=0;i<existing.length;i++){ existing[i].remove(); }
+    var placed = tasks.filter(function(t){ return t.placed; });
+    placed.forEach(function(t){
+      var dot = document.createElement("div");
+      dot.className = "track-dot" + (t._justPlaced ? " pulse" : "");
+      dot.style.left = t.pos + "%";
+      dot.style.setProperty("--dot-c", dotColorFor(t));
+      dot.title = t.text + " — " + Math.round(t.pos) + "%";
+      track.appendChild(dot);
+      t._justPlaced = false;
+    });
+  }
+
+  function renderLanes(){
+    var w = trackWrap.getBoundingClientRect().width;
+    var placed = tasks.filter(function(t){ return t.placed; }).sort(function(a,b){ return a.pos - b.pos; });
+    if(placed.length === 0){
+      lanes.innerHTML = '<p class="lanes-empty">Placed tasks will line up here, under the line.</p>';
+      lanes.style.height = "";
+      return;
+    }
+    var laneRight = [];
+    var html = "";
+    placed.forEach(function(t){
+      var width = estimateWidth(t.text);
+      var center = (t.pos/100) * w;
+      var left = center - width/2;
+      var right = center + width/2;
+      if(left < 0){ right -= left; left = 0; }
+      if(right > w){ left -= (right - w); right = w; }
+      if(left < 0) left = 0;
+      var lane = 0;
+      while(laneRight[lane] !== undefined && left < laneRight[lane] + LANE_GAP){ lane++; }
+      laneRight[lane] = right;
+      var top = lane * ROW_STEP;
+      var stemHeight = 16 + top + CHIP_H/2;
+      html +=
+        '<div class="stem" style="left:'+Math.round(center-1)+'px;height:'+stemHeight+'px;top:-16px;"></div>'+
+        '<div class="placed-chip" style="left:'+Math.round(left)+'px;top:'+top+'px;width:'+Math.round(width)+'px;">'+
+          chipHtml(t).replace('class="chip"','class="chip" style="width:100%"')+
+        '</div>';
+    });
+    lanes.innerHTML = html;
+    lanes.style.height = (laneRight.length * ROW_STEP + 4) + "px";
+  }
+
+  function renderStats(){
+    var placed = tasks.filter(function(t){ return t.placed; });
+    statTotal.textContent = placed.length;
+    if(placed.length === 0){
+      statAvg.textContent = "–";
+    } else {
+      var avg = placed.reduce(function(sum,t){ return sum + t.pos; }, 0) / placed.length;
+      statAvg.textContent = Math.round(avg) + "%";
+    }
+    var counts = [0,0,0,0,0];
+    placed.forEach(function(t){ counts[Math.min(4, Math.floor(t.pos/20))]++; });
+    var total = placed.length || 1;
+    histogram.innerHTML = counts.map(function(c,i){
+      var pct = (c/total)*100;
+      if(c === 0) return "";
+      return '<div class="seg" style="flex-grow:'+pct+';background:'+BAND_COLORS[i]+'" title="'+BANDS[i].label+': '+c+'"></div>';
+    }).join("");
+    if(placed.length === 0){ histogram.innerHTML = ""; }
+  }
+
+  function renderAll(){
+    renderTray();
+    renderTrackDots();
+    renderLanes();
+    renderStats();
+  }
+
+  // ---------------- Confetti ----------------
+
+  function spawnConfetti(x, y){
+    var colors = BAND_COLORS;
+    for(var i=0;i<10;i++){
+      var bit = document.createElement("div");
+      bit.className = "confetti-bit";
+      var angle = Math.random()*Math.PI*2;
+      var dist = 40 + Math.random()*50;
+      bit.style.left = x+"px";
+      bit.style.top = y+"px";
+      bit.style.background = colors[Math.floor(Math.random()*colors.length)];
+      bit.style.setProperty("--dx", Math.cos(angle)*dist+"px");
+      bit.style.setProperty("--dy", Math.sin(angle)*dist+"px");
+      bit.style.setProperty("--rot", (Math.random()*360)+"deg");
+      document.body.appendChild(bit);
+      (function(el){ setTimeout(function(){ el.remove(); }, 750); })(bit);
+    }
+  }
+
+  // ---------------- Toast ----------------
+
+  function showToast(msg, actionLabel, actionFn){
+    clearTimeout(toastTimer);
+    toastEl.innerHTML = '<span>'+escapeHtml(msg)+'</span>';
+    if(actionLabel && actionFn){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = actionLabel;
+      btn.addEventListener("click", function(){
+        actionFn();
+        toastEl.hidden = true;
+      });
+      toastEl.appendChild(btn);
+    }
+    toastEl.hidden = false;
+    toastTimer = setTimeout(function(){ toastEl.hidden = true; }, 5000);
+  }
+
+  // ---------------- Task CRUD ----------------
+
+  function addTask(text){
+    text = text.trim();
+    if(!text) return;
+    tasks.push({id:genId(), text:text, placed:false, pos:null});
+    save();
+    renderAll();
+  }
+
+  var lastRemoved = null;
+  function removeTask(id){
+    var idx = tasks.findIndex(function(t){ return t.id === id; });
+    if(idx === -1) return;
+    lastRemoved = tasks[idx];
+    tasks.splice(idx,1);
+    save();
+    renderAll();
+    showToast("Task removed", "Undo", function(){
+      if(lastRemoved){ tasks.push(lastRemoved); save(); renderAll(); lastRemoved = null; }
+    });
+  }
+
+  function placeTask(id, pos, opts){
+    var t = tasks.find(function(t){ return t.id === id; });
+    if(!t) return;
+    var wasPlaced = t.placed;
+    t.placed = true;
+    t.pos = Math.max(0, Math.min(100, pos));
+    if(!wasPlaced){
+      t._justPlaced = true;
+      if(opts && opts.confettiAt){ spawnConfetti(opts.confettiAt.x, opts.confettiAt.y); }
+    }
+    save();
+    renderAll();
+  }
+
+  function unplaceTask(id){
+    var t = tasks.find(function(t){ return t.id === id; });
+    if(!t) return;
+    t.placed = false;
+    t.pos = null;
+    save();
+    renderAll();
+  }
+
+  // ---------------- Add form ----------------
+
+  document.getElementById("addForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var input = document.getElementById("taskInput");
+    addTask(input.value);
+    input.value = "";
+    input.focus();
+  });
+
+  document.getElementById("addExamplesBtn").addEventListener("click", function(){
+    var existingTexts = tasks.map(function(t){ return t.text.toLowerCase(); });
+    var added = 0;
+    EXAMPLES.forEach(function(ex){
+      if(existingTexts.indexOf(ex.toLowerCase()) === -1 && added < 6){
+        tasks.push({id:genId(), text:ex, placed:false, pos:null});
+        added++;
+      }
+    });
+    save();
+    renderAll();
+    if(added === 0){ showToast("Examples are already in your list"); }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(tasks.length === 0) return;
+    if(window.confirm("Clear all tasks and start over?")){
+      tasks = [];
+      save();
+      renderAll();
+    }
+  });
+
+  // ---------------- Drag: pointer events (delegated) ----------------
+
+  function isOverEl(el, x, y, pad){
+    pad = pad || 0;
+    var r = el.getBoundingClientRect();
+    return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
+  }
+
+  function updateGhost(x){
+    var r = track.getBoundingClientRect();
+    if(!isOverEl(trackWrap, x, r.top + r.height/2, 60)){
+      ghostGuide.classList.remove("show");
+      ghostLabel.classList.remove("show");
+      trackWrap.classList.remove("drop-hover");
+      return;
+    }
+    trackWrap.classList.add("drop-hover");
+    var clampedX = Math.max(r.left, Math.min(r.right, x));
+    var fraction = ((clampedX - r.left) / r.width) * 100;
+    var leftPct = fraction + "%";
+    ghostGuide.style.left = leftPct;
+    ghostGuide.classList.add("show");
+    ghostLabel.style.left = leftPct;
+    ghostLabel.textContent = bandFor(fraction).label + " · " + Math.round(fraction) + "%";
+    ghostLabel.classList.add("show");
+  }
+
+  function clearGhost(){
+    ghostGuide.classList.remove("show");
+    ghostLabel.classList.remove("show");
+    trackWrap.classList.remove("drop-hover");
+  }
+
+  document.addEventListener("pointerdown", function(e){
+    var removeBtn = e.target.closest && e.target.closest("[data-remove]");
+    if(removeBtn) return; // handled by click
+    var chip = e.target.closest && e.target.closest(".chip");
+    if(!chip) return;
+    var id = chip.dataset.id;
+    var rect = chip.getBoundingClientRect();
+    drag = {
+      id:id,
+      el:chip,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      startX: e.clientX,
+      startY: e.clientY,
+      width: rect.width,
+      height: rect.height,
+      moved:false
+    };
+    try{ chip.setPointerCapture(e.pointerId); }catch(err){}
+    chip.classList.add("dragging");
+    chip.style.position = "fixed";
+    chip.style.left = rect.left + "px";
+    chip.style.top = rect.top + "px";
+    chip.style.width = rect.width + "px";
+    chip.style.margin = "0";
+    document.body.classList.add("dragging-active");
+  });
+
+  document.addEventListener("pointermove", function(e){
+    if(!drag) return;
+    var dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) drag.moved = true;
+    drag.el.style.left = (e.clientX - drag.offsetX) + "px";
+    drag.el.style.top = (e.clientY - drag.offsetY) + "px";
+    updateGhost(e.clientX);
+  });
+
+  function endDrag(e){
+    if(!drag) return;
+    var id = drag.id, el = drag.el, moved = drag.moved;
+    var cx = e.clientX, cy = e.clientY;
+    el.classList.remove("dragging");
+    el.style.position = "";
+    el.style.left = "";
+    el.style.top = "";
+    el.style.width = "";
+    el.style.margin = "";
+    document.body.classList.remove("dragging-active");
+    clearGhost();
+
+    var trackRect = track.getBoundingClientRect();
+    var overTrack = isOverEl(trackWrap, cx, cy, 40);
+    var traySection = document.getElementById("traySection");
+    var overTray = isOverEl(traySection, cx, cy, 10);
+
+    if(!moved){
+      var task = tasks.find(function(t){ return t.id === id; });
+      if(task && !task.placed){
+        placeTask(id, 50, {confettiAt:{x:cx,y:cy}});
+      }
+    } else if(overTrack){
+      var clampedX = Math.max(trackRect.left, Math.min(trackRect.right, cx));
+      var fraction = ((clampedX - trackRect.left) / trackRect.width) * 100;
+      var wasPlacedBefore = tasks.find(function(t){ return t.id===id; }).placed;
+      placeTask(id, fraction, wasPlacedBefore ? null : {confettiAt:{x:cx,y:cy}});
+    } else if(overTray){
+      unplaceTask(id);
+    } else {
+      renderAll();
+    }
+    drag = null;
+  }
+
+  document.addEventListener("pointerup", endDrag);
+  document.addEventListener("pointercancel", endDrag);
+
+  // Tap-safe remove (works whether or not a drag briefly engaged)
+  document.addEventListener("click", function(e){
+    var removeBtn = e.target.closest && e.target.closest("[data-remove]");
+    if(removeBtn){
+      removeTask(removeBtn.dataset.remove);
+    }
+  });
+
+  // Keyboard support: Enter/Space places at 50%, arrows nudge placed tasks
+  document.addEventListener("keydown", function(e){
+    var chip = e.target.closest && e.target.closest(".chip");
+    if(!chip) return;
+    var id = chip.dataset.id;
+    var task = tasks.find(function(t){ return t.id === id; });
+    if(!task) return;
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      if(!task.placed) placeTask(id, 50);
+    } else if(task.placed && (e.key === "ArrowLeft" || e.key === "ArrowRight")){
+      e.preventDefault();
+      var delta = e.key === "ArrowLeft" ? -2 : 2;
+      placeTask(id, task.pos + delta);
+    } else if(e.key === "Backspace" || e.key === "Delete"){
+      e.preventDefault();
+      removeTask(id);
+    }
+  });
+
+  window.addEventListener("resize", function(){ renderLanes(); });
+
+  // ---------------- Copy / Print ----------------
+
+  function buildSummaryText(){
+    var placed = tasks.filter(function(t){ return t.placed; }).sort(function(a,b){ return a.pos-b.pos; });
+    var unplaced = tasks.filter(function(t){ return !t.placed; });
+    var lines = [];
+    lines.push("DRAWING THE LINE — where I draw the line on AI use");
+    lines.push("");
+    if(placed.length){
+      var avg = Math.round(placed.reduce(function(s,t){return s+t.pos;},0)/placed.length);
+      lines.push("Average lean: " + avg + "% toward AI");
+    }
+    lines.push("");
+    lines.push("PLACED TASKS (left = human, right = AI)");
+    if(placed.length === 0){
+      lines.push("None placed yet.");
+    } else {
+      placed.forEach(function(t){
+        lines.push("- [" + Math.round(t.pos) + "% · " + bandFor(t.pos).label + "] " + t.text);
+      });
+    }
+    if(unplaced.length){
+      lines.push("");
+      lines.push("UNPLACED TASKS");
+      unplaced.forEach(function(t){ lines.push("- " + t.text); });
+    }
+    return lines.join("\n");
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try{ document.execCommand("copy"); showToast("Copied to clipboard"); }
+    catch(e){ showToast("Copy failed — select and copy manually."); }
+    document.body.removeChild(ta);
+  }
+
+  document.getElementById("copyBtn").addEventListener("click", function(){
+    var text = buildSummaryText();
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ showToast("Copied to clipboard"); }).catch(function(){ fallbackCopy(text); });
+    } else {
+      fallbackCopy(text);
+    }
+  });
+
+  document.getElementById("printBtn").addEventListener("click", function(){ window.print(); });
+
+  // ---------------- Init ----------------
+
+  function init(){
+    tasks = load();
+    renderAll();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
